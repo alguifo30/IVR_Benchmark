@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BENCHMARK IVR — BCP / BBVA / SCOTIABANK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fbfbfd;
+    --bg-soft:#f5f5f7;
+    --bg-card:#ffffff;
+    --ink:#1d1d1f;
+    --ink-display:#3c3c40;
+    --ink-dim:rgba(29,29,31,.62);
+    --ink-faint:rgba(29,29,31,.40);
+    --line:rgba(29,29,31,.10);
+    --line-soft:rgba(29,29,31,.06);
+    --red:#c2543f;
+    --teal:#057a6c;
+    --bcp:#a85500;
+    --bbva:#0857a6;
+    --scotia:var(--red);
+    --accent:var(--red);
+    --r-bad:#b8281a;
+    --r-good:#057a6c;
+    --radius-sm:10px;
+    --radius-md:16px;
+    --radius-lg:22px;
+    --radius-pill:999px;
+    --shadow-sm:0 1px 2px rgba(29,29,31,.05), 0 1px 1px rgba(29,29,31,.03);
+    --shadow-md:0 14px 30px rgba(29,29,31,.09), 0 2px 8px rgba(29,29,31,.05);
+    --display:'Anton', sans-serif;
+    --body:'Space Grotesk', sans-serif;
+    --mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
+  }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--body);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{ background:var(--red); color:#fff; }
+  a{color:inherit; text-decoration:none;}
+  img,svg{display:block;}
+
+  /* ---------- utility ---------- */
+  .wrap{ max-width:1200px; margin:0 auto; padding:0 32px; }
+  @media (max-width:680px){ .wrap{ padding:0 20px; } }
+  .eyebrow{
+    font-family:var(--body); font-size:13px; letter-spacing:.04em; font-weight:600;
+    text-transform:uppercase; color:var(--accent);
+    display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--accent); display:inline-block; flex:0 0 auto; }
+  .num-badge{
+    display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px;
+    border-radius:50%; background:var(--accent); color:#fff; font-family:var(--mono); font-weight:700;
+    font-size:13px; margin-bottom:20px;
+  }
+  .chip{
+    font-family:var(--body); font-size:12px; font-weight:500; letter-spacing:.01em;
+    border:1px solid var(--line); padding:6px 13px; border-radius:var(--radius-pill); color:var(--ink-dim);
+    display:inline-flex; align-items:center; gap:6px; white-space:nowrap; background:var(--bg-card);
+  }
+  .chip b{ color:var(--ink); font-weight:700; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--accent); flex:0 0 auto; }
+  .tag-good{ border-color:rgba(5,122,108,.35); color:var(--teal); background:rgba(5,122,108,.06); }
+  .tag-bad{ border-color:rgba(184,40,26,.32); color:var(--r-bad); background:rgba(184,40,26,.05); }
+
+  /* ---------- nav ---------- */
+  header.nav{
+    position:sticky; top:0; z-index:50; background:rgba(251,251,253,.86);
+    backdrop-filter:blur(14px); border-bottom:1px solid var(--line-soft);
+  }
+  .nav-inner{
+    max-width:1200px; margin:0 auto; padding:16px 32px;
+    display:flex; align-items:center; justify-content:space-between; gap:24px;
+  }
+  .brand{ font-family:var(--display); font-size:17px; letter-spacing:.01em; text-transform:uppercase; color:var(--ink-display); }
+  .brand span{ color:var(--red); }
+  .nav-links{ display:flex; gap:24px; font-family:var(--body); font-size:13.5px; font-weight:500; overflow-x:auto; }
+  .nav-links a{ color:var(--ink-dim); white-space:nowrap; padding:4px 0; border-bottom:2px solid transparent; transition:color .2s, border-color .2s; }
+  .nav-links a:hover, .nav-links a:focus-visible{ color:var(--ink); border-color:var(--red); }
+  @media (max-width:680px){ .nav-inner{ padding:14px 20px; gap:14px;} .nav-links{ gap:14px; } }
+
+  .nav-market-btn{
+    font-family:var(--body); font-size:13px; font-weight:600;
+    background:var(--ink); color:#fff; border:none; border-radius:var(--radius-pill);
+    padding:9px 18px; cursor:pointer; white-space:nowrap; flex:0 0 auto; transition:.15s;
+  }
+  .nav-market-btn:hover, .nav-market-btn:focus-visible{ filter:brightness(1.25); }
+
+  /* ---------- hero ---------- */
+  .hero{ position:relative; padding:96px 0 56px; overflow:hidden; }
+  .hero .wrap{ position:relative; z-index:1; }
+  .hero-eyebrow{ margin-bottom:24px; }
+  .hero h1{
+    font-family:var(--display); text-transform:uppercase; line-height:.94;
+    font-size:clamp(42px,8vw,96px); letter-spacing:-.01em; color:var(--ink-display);
+  }
+  .hero h1 em{ font-style:normal; color:var(--red); }
+  .hero-sub{
+    max-width:580px; margin-top:24px; color:var(--ink-dim); font-size:17px; line-height:1.6;
+  }
+  .hero-meta{
+    max-width:580px; margin-top:14px; color:var(--ink-faint); font-size:12.5px; line-height:1.6; font-style:normal;
+  }
+  .stats-card{ margin-top:50px; border-radius:var(--radius-md); overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid var(--line-soft); }
+  .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line-soft); }
+  .stats div{ background:var(--bg-card); padding:24px 22px; }
+  .stats .n{ font-family:var(--display); font-size:clamp(24px,3vw,34px); color:var(--ink-display); }
+  .stats .l{ font-family:var(--body); font-size:12.5px; font-weight:500; color:var(--ink-dim); margin-top:6px; }
+  @media (max-width:760px){ .stats{ grid-template-columns:repeat(2,1fr);} }
+
+  .market-trigger{
+    display:inline-flex; align-items:center; gap:8px; margin-top:24px; padding:11px 18px;
+    border:1px solid var(--line); background:var(--bg-card); border-radius:var(--radius-pill); font-family:var(--body); font-size:13px; font-weight:500;
+    color:var(--ink-dim); cursor:pointer; transition:.15s;
+  }
+  .market-trigger:hover, .market-trigger:focus-visible{ border-color:var(--accent); color:var(--accent); }
+
+  /* ---------- modal: contexto de mercado ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(20,20,24,.45); display:none;
+    align-items:center; justify-content:center; z-index:200; padding:20px; backdrop-filter:blur(4px);
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{
+    background:var(--bg-card); border-radius:var(--radius-lg); width:100%; max-width:680px;
+    max-height:84vh; overflow-y:auto; position:relative; box-shadow:0 30px 80px rgba(0,0,0,.25);
+  }
+  .modal-head{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; padding:22px 26px 18px;
+    border-bottom:1px solid var(--line-soft); position:sticky; top:0; background:var(--bg-card); z-index:1;
+    border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .modal-head h3{ font-family:var(--display); text-transform:uppercase; font-size:19px; letter-spacing:.01em; color:var(--ink-display); }
+  .modal-head p{ font-family:var(--body); font-size:12px; color:var(--ink-faint); margin-top:4px; }
+  .modal-close{
+    background:var(--bg-soft); border:none; width:32px; height:32px; flex:0 0 auto; border-radius:50%;
+    cursor:pointer; font-size:14px; color:var(--ink-dim); line-height:1;
+  }
+  .modal-close:hover, .modal-close:focus-visible{ background:var(--ink); color:#fff; }
+  .modal-tabs{ display:flex; gap:4px; border-bottom:1px solid var(--line-soft); padding:10px 22px; position:sticky; top:73px; background:var(--bg-card); z-index:1; overflow-x:auto; }
+  .modal-tab{
+    font-family:var(--body); font-size:12.5px; font-weight:600; padding:8px 14px;
+    background:none; border:none; border-radius:var(--radius-pill); cursor:pointer; color:var(--ink-dim); transition:.15s; white-space:nowrap;
+  }
+  .modal-tab.active{ color:#fff; background:var(--accent); }
+  .modal-tab:hover:not(.active){ background:var(--bg-soft); color:var(--ink); }
+  .modal-panel{ display:none; padding:24px 26px 28px; }
+  .modal-panel.active{ display:block; }
+  ul.mkt-list{ list-style:none; }
+  ul.mkt-list li{ font-size:13.5px; color:var(--ink-dim); line-height:1.6; padding-left:16px; position:relative; margin-bottom:15px; }
+  ul.mkt-list li::before{ content:'—'; position:absolute; left:0; color:var(--accent); }
+  ul.mkt-list li b{ color:var(--ink); }
+  ul.mkt-list .src{ display:block; font-family:var(--mono); font-size:10px; color:var(--ink-faint); margin-top:3px; }
+  .mkt-intro{ font-size:13px; color:var(--ink-dim); line-height:1.6; margin-bottom:18px; }
+  .sys-stats{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:480px){ .sys-stats{ grid-template-columns:1fr; } }
+  .sys-stats > div{ padding:16px; background:var(--bg-soft); border-radius:var(--radius-sm); }
+  .sys-stats .n{ font-family:var(--display); font-size:24px; color:var(--ink-display); }
+  .sys-stats .l{ font-family:var(--body); font-size:12px; color:var(--ink-dim); margin-top:6px; line-height:1.45; }
+  .sys-stats .src{ display:block; font-family:var(--mono); font-size:9.5px; color:var(--ink-faint); margin-top:6px; }
+  @media (max-width:560px){ .modal-tabs{ top:69px; } }
+
+  /* ---------- bank section ---------- */
+  .bank-section{ position:relative; padding:80px 0; border-bottom:1px solid var(--line-soft); }
+  .bank-head{ margin-bottom:40px; }
+  .bank-head h2{
+    font-family:var(--display); text-transform:uppercase; font-size:clamp(36px,5.6vw,64px);
+    line-height:.96; color:var(--accent);
+  }
+  .bank-tagline{ font-size:16px; color:var(--accent); font-weight:600; margin-top:10px; font-family:var(--body); }
+
+  .bank-grid{ display:grid; grid-template-columns:300px 1fr; gap:32px; align-items:start; }
+  @media (max-width:920px){
+    .bank-grid{ grid-template-columns:1fr; }
+    .bank-grid .sim{ order:-1; }
+  }
+
+  .id-panel p.desc{ color:var(--ink-dim); font-size:14.5px; line-height:1.7; margin-bottom:22px; }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px; }
+  .finding{
+    border-radius:var(--radius-sm); background:var(--bg-soft); padding:12px 14px; margin-bottom:10px; font-size:13px; line-height:1.55; color:var(--ink-dim);
+  }
+  .finding b{ color:var(--ink); display:block; font-family:var(--body); font-size:11.5px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; margin-bottom:4px; }
+  .finding.good b{ color:var(--teal); }
+  .finding.bad b{ color:var(--r-bad); }
+
+  details.tree-toggle{ margin-top:22px; border-top:1px solid var(--line-soft); padding-top:16px; }
+  details.tree-toggle summary{
+    cursor:pointer; font-family:var(--body); font-size:13px; font-weight:600; letter-spacing:.01em;
+    color:var(--accent); list-style:none; display:flex; align-items:center; gap:8px;
+  }
+  details.tree-toggle summary::marker{ display:none; content:''; }
+  details.tree-toggle summary::before{ content:'+'; font-size:15px; }
+  details.tree-toggle[open] summary::before{ content:'–'; }
+  pre.tree-ascii{
+    font-family:var(--mono); font-size:11.5px; line-height:1.65; color:var(--ink-dim);
+    white-space:pre; overflow-x:auto; margin-top:14px; padding:16px; background:var(--bg-soft); border-radius:var(--radius-sm);
+  }
+
+  /* ---------- simulator ---------- */
+  .sim{
+    background:var(--bg-card); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); border:1px solid var(--line-soft);
+    position:relative; padding:0; display:flex; flex-direction:column; min-height:440px;
+  }
+  .sim-top{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:18px 24px; border-bottom:1px solid var(--line-soft);
+  }
+  .sim-top .live{ display:flex; align-items:center; gap:8px; font-family:var(--body); font-size:12.5px; font-weight:600; color:var(--ink-dim); }
+  .pulse{ width:7px; height:7px; border-radius:50%; background:var(--accent); animation:pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.25; } }
+  .sim-top .time{ font-family:var(--mono); font-size:13px; color:var(--ink); }
+
+  .breadcrumb{ display:flex; flex-wrap:wrap; gap:6px; padding:16px 24px 0; min-height:18px; }
+  .breadcrumb .crumb{
+    font-family:var(--mono); font-size:11px; padding:4px 10px; border-radius:var(--radius-pill); background:var(--bg-soft); color:var(--accent);
+  }
+  .breadcrumb .arrow{ color:var(--ink-faint); align-self:center; font-size:11px; }
+
+  .sim-body{ padding:22px 24px 24px; flex:1; display:flex; flex-direction:column; }
+  .prompt-box{
+    font-size:16px; line-height:1.6; color:var(--ink); padding:18px 20px; background:var(--bg-soft);
+    border-radius:var(--radius-md); margin-bottom:18px; position:relative;
+  }
+  .prompt-box .pq{ color:var(--accent); font-family:var(--body); font-size:11.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; display:block; margin-bottom:8px; }
+  .prompt-note{ font-size:12.5px; color:var(--ink-dim); margin-top:10px; padding-top:10px; border-top:1px solid var(--line-soft); }
+
+  .opt-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding-bottom:20px; }
+  @media (max-width:520px){ .opt-grid{ grid-template-columns:1fr; } }
+  .opt-btn{
+    display:flex; align-items:center; gap:12px; text-align:left;
+    background:var(--bg-card); border:1px solid var(--line); border-radius:var(--radius-sm); color:var(--ink); padding:14px 15px;
+    cursor:pointer; font-family:var(--body); font-size:13.5px; line-height:1.4; transition:border-color .15s, transform .1s, box-shadow .15s;
+  }
+  .opt-btn:hover, .opt-btn:focus-visible{ border-color:var(--accent); box-shadow:var(--shadow-sm); transform:translateY(-1px); }
+  .opt-btn .k{
+    font-family:var(--mono); font-weight:700; font-size:12.5px; color:#fff; background:var(--accent);
+    border-radius:50%; min-width:28px; height:28px; display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+  .opt-btn.ghost{ opacity:.75; }
+  .opt-btn.ghost .k{ background:var(--ink-faint); }
+
+  .result-card{ padding-bottom:8px; margin-top:auto; }
+  .result-head{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .result-icon{ font-family:var(--body); font-weight:600; font-size:12px; padding:4px 12px; border-radius:var(--radius-pill); }
+  .result-icon.unknown{ background:var(--bg-soft); color:var(--ink-dim); }
+  .result-icon.warn{ background:rgba(184,40,26,.10); color:var(--r-bad); }
+  .result-icon.ok{ background:rgba(5,122,108,.10); color:var(--teal); }
+  .result-text{ font-size:15px; line-height:1.65; color:var(--ink); }
+  .result-meta{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .reset-btn{
+    margin-top:18px; font-family:var(--body); font-size:13px; font-weight:600;
+    background:var(--bg-soft); border:none; border-radius:var(--radius-pill); color:var(--ink); padding:11px 18px; cursor:pointer; transition:.15s;
+  }
+  .reset-btn:hover{ background:var(--ink); color:#fff; }
+
+  /* ---------- veredicto ---------- */
+  .veredicto{ padding:90px 0; }
+  .vp-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:40px; }
+  @media (max-width:880px){ .vp-grid{ grid-template-columns:1fr; } }
+  .vp-card{ background:var(--bg-card); border-radius:var(--radius-md); padding:28px 24px; position:relative; border:1px solid var(--line-soft); box-shadow:var(--shadow-sm); }
+  .vp-card .bank{ font-family:var(--body); font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--accent); margin-bottom:12px; }
+  .vp-card h3{ font-family:var(--display); font-size:22px; line-height:1.15; text-transform:uppercase; margin-bottom:14px; color:var(--ink-display); }
+  .vp-card p{ font-size:13.5px; color:var(--ink-dim); line-height:1.65; margin-bottom:18px; }
+  .vp-card .chip-row{ margin-bottom:0; }
+
+  .matrix-wrap{ margin-top:50px; overflow-x:auto; border-radius:var(--radius-md); border:1px solid var(--line-soft); box-shadow:var(--shadow-sm); }
+  table.matrix{ width:100%; border-collapse:collapse; min-width:680px; }
+  table.matrix th, table.matrix td{ padding:15px 18px; text-align:left; font-size:13px; border-bottom:1px solid var(--line-soft); }
+  table.matrix th{ font-family:var(--body); font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; color:var(--ink-dim); background:var(--bg-soft); }
+  table.matrix td{ color:var(--ink-dim); }
+  table.matrix td.label{ color:var(--ink); font-weight:600; font-family:var(--body); font-size:13px; }
+  table.matrix tr:last-child td{ border-bottom:none; }
+  table.matrix td b{ color:var(--ink); }
+  .matrix-note{ font-size:12px; color:var(--ink-faint); margin-top:14px; line-height:1.6; max-width:680px; }
+
+  /* ---------- footer ---------- */
+  footer{ border-top:1px solid var(--line-soft); padding:36px 0; }
+  .foot-inner{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; }
+  .foot-inner .l1{ font-family:var(--body); font-size:12px; color:var(--ink-faint); }
+  .foot-inner a{ color:var(--ink-dim); border-bottom:1px solid var(--line); }
+  .foot-inner a:hover{ color:var(--red); border-color:var(--red); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">IVR<span>/</span>BENCH</div>
+    <nav class="nav-links">
+      <a href="#bcp">01 BCP</a>
+      <a href="#bbva">02 BBVA</a>
+      <a href="#scotia">03 Scotiabank</a>
+      <a href="#veredicto">Veredicto</a>
+    </nav>
+    <button class="nav-market-btn" data-modal-open="sistema">Mercado</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow hero-eyebrow">Benchmark de canales IVR · banca peruana</div>
+    <h1>CADA TONO<br>CUENTA UNA<br><em>HISTORIA.</em></h1>
+    <p class="hero-sub">Reconstrucción de los árboles IVR de BCP, BBVA y Scotiabank a partir de llamadas reales transcritas — con sus menús exactos, fricciones, errores y silencios. Navega cada árbol como lo haría un cliente real.</p>
+    <p class="hero-meta">Donde una rama no fue recorrida en la llamada real, queda marcada como "No identificado" en el simulador — nada se completa por inferencia.</p>
+    <div class="stats-card">
+      <div class="stats">
+        <div><div class="n">03</div><div class="l">Bancos analizados</div></div>
+        <div><div class="n">05</div><div class="l">Llamadas reales</div></div>
+        <div><div class="n">~24'</div><div class="l">Min. transcritos</div></div>
+        <div><div class="n">02</div><div class="l">Discrepancias detectadas</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BCP ============ -->
+<section class="bank-section" id="bcp" style="--accent:var(--bcp)">
+  <div class="wrap">
+    <div class="bank-head">
+      <span class="num-badge">01</span>
+      <h2>BCP</h2>
+      <div class="bank-tagline">Ejecutivo dedicado para clientes premium</div>
+    </div>
+
+    <div class="bank-grid">
+      <div class="id-panel">
+        <p class="desc">El Banco de Crédito exige identificarte con tu DNI y confirmar el documento antes de bloquear cualquier tarjeta, y posiciona su "Banca Exclusiva Digital" con un ejecutivo BEST dedicado para clientes identificados.</p>
+        <div class="chip-row">
+          <span class="chip"><span class="dot"></span>4 niveles de profundidad</span>
+          <span class="chip"><span class="dot"></span>Auth: DNI completo</span>
+          <span class="chip tag-good">Asesor disponible (op. 4)</span>
+        </div>
+        <div class="finding good">
+          <b>Buena práctica</b>
+          El bloqueo es granular: permite elegir entre tarjeta de débito, tarjeta de crédito o todas tus tarjetas — más específico que sus dos competidores.
+        </div>
+        <div class="finding bad">
+          <b>Fricción detectada</b>
+          El submenú "activar/cancelar tarjeta" no maneja el silencio del usuario: tras 2 timeouts, corta la llamada sin derivar a asesor.
+        </div>
+        <div class="finding bad">
+          <b>Mensaje contradictorio</b>
+          Pide "los últimos 4 dígitos" de la tarjeta, pero a continuación advierte que se necesita el número completo.
+        </div>
+        <button class="market-trigger" data-modal-open="bcp">Ver contexto de mercado de BCP →</button>
+        <details class="tree-toggle">
+          <summary>Ver árbol completo en texto</summary>
+          <pre class="tree-ascii">BCP
+├── Opción 0: Robo/pérdida
+│   ├── Identificación: DNI (o * para otro documento → No identificado)
+│   ├── Confirmación: 1 confirmar / 2 reingresar documento
+│   └── Tipo de bloqueo
+│       ├── 1: Bloquear tarjeta de débito
+│       ├── 2: Bloquear tarjeta de crédito
+│       └── 3: Bloquear todas tus tarjetas
+│           └── (sin mensaje de cierre en la transcripción disponible)
+├── [Ingresa DNI] → Menú BEST
+│   ├── 1: Saldos y movimientos → captura 4 díg. → No identificado
+│   ├── 2: Activar/cancelar tarjeta
+│   │   ├── 1: Activar → No identificado
+│   │   └── 2: Cancelar → No identificado
+│   │   └── (real: timeout x2 → corte de llamada)
+│   ├── 3: Contacto WhatsApp → derivación
+│   └── 4: Ejecutivo BEST digital → derivación asesor
+└── Opción *: Empresa (RUC) → No identificado</pre>
+        </details>
+      </div>
+
+      <div class="sim" id="sim-bcp">
+        <div class="sim-top">
+          <div class="live"><span class="pulse"></span>Simulador de llamada</div>
+          <div class="time" data-time>0:00</div>
+        </div>
+        <div class="breadcrumb" data-breadcrumb></div>
+        <div class="sim-body" data-body></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BBVA ============ -->
+<section class="bank-section" id="bbva" style="--accent:var(--bbva)">
+  <div class="wrap">
+    <div class="bank-head">
+      <span class="num-badge">02</span>
+      <h2>BBVA</h2>
+      <div class="bank-tagline">El más profundo en autoservicio digital</div>
+    </div>
+
+    <div class="bank-grid">
+      <div class="id-panel">
+        <p class="desc">BBVA identifica al cliente por su número de teléfono y confirma con un solo dígito — la autenticación inicial con menos fricción de los tres. A cambio, ofrece el árbol más profundo (hasta 5 niveles) en Tin Link, token digital y configuración de app.</p>
+        <div class="chip-row">
+          <span class="chip"><span class="dot"></span>Hasta 5 niveles</span>
+          <span class="chip tag-good">Auth inicial: 1 dígito</span>
+          <span class="chip tag-good">Encuesta de cierre</span>
+        </div>
+        <div class="finding good">
+          <b>Buena práctica</b>
+          Único banco con encuesta de satisfacción explícita al final del autoservicio ("¿se solucionó su consulta?").
+        </div>
+        <div class="finding bad">
+          <b>Fricción detectada</b>
+          La activación de token digital falló 3 veces consecutivas en la prueba real ("el número que ha marcado es incorrecto") antes de cerrar el autoservicio.
+        </div>
+        <button class="market-trigger" data-modal-open="bbva">Ver contexto de mercado de BBVA →</button>
+        <details class="tree-toggle">
+          <summary>Ver árbol completo en texto</summary>
+          <pre class="tree-ascii">BBVA
+├── Identificación por teléfono → confirmar (1) / no (2→No identif.)
+├── Menú principal
+│   ├── 1: Bloqueo / compras rechazadas
+│   │   ├── 1: Bloquear app/banca internet → No identificado
+│   │   ├── 2: Compras rechazadas → No identificado
+│   │   └── 3: Volver
+│   ├── 2: Campañas / contratar productos → derivación directa a asesor
+│   └── 3: Tin Link / token / app BBVA
+│       ├── 1: Tin Link
+│       │   ├── 1: Afiliación y uso → No identificado
+│       │   ├── 2: Estado transferencias → No identificado
+│       │   └── 3: Volver
+│       ├── 2: Token digital (3 métodos)
+│       │   └── (real: 3 errores consecutivos → cierre + encuesta)
+│       ├── 3: Afiliación/config. app
+│       │   ├── 1: Afiliación → No identificado
+│       │   ├── 2: Reset contraseña → No identificado
+│       │   ├── 3: Prender/apagar tarjeta → "tarjeta vencida, ir a oficina"
+│       │   └── 4: Volver
+│       ├── 4: Asesor (por la app) → derivación
+│       └── 5: Volver al menú principal</pre>
+        </details>
+      </div>
+
+      <div class="sim" id="sim-bbva">
+        <div class="sim-top">
+          <div class="live"><span class="pulse"></span>Simulador de llamada</div>
+          <div class="time" data-time>0:00</div>
+        </div>
+        <div class="breadcrumb" data-breadcrumb></div>
+        <div class="sim-body" data-body></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCOTIABANK ============ -->
+<section class="bank-section" id="scotia" style="--accent:var(--scotia); border-bottom:none;">
+  <div class="wrap">
+    <div class="bank-head">
+      <span class="num-badge">03</span>
+      <h2>SCOTIABANK</h2>
+      <div class="bank-tagline">La seguridad como primera prioridad</div>
+    </div>
+
+    <div class="bank-grid">
+      <div class="id-panel">
+        <p class="desc">Scotiabank coloca el bloqueo de tarjeta como la opción 1 del menú raíz — la decisión correcta para un canal de seguridad. Para consultas no críticas, en cambio, exige documento + tarjeta + clave secreta en cascada.</p>
+        <div class="chip-row">
+          <span class="chip"><span class="dot"></span>4 niveles</span>
+          <span class="chip tag-bad">Auth en cascada (3 capas)</span>
+          <span class="chip">Confirmación por eco</span>
+        </div>
+        <div class="finding bad">
+          <b>Mal timing de UX</b>
+          Inserta un mensaje promocional de "premios" en medio del flujo de bloqueo — un momento de estrés, no el lugar para publicidad.
+        </div>
+        <div class="finding bad">
+          <b>Discrepancia entre grabaciones</b>
+          "Cheques Telebanking" se anuncia como "opción 0" en una llamada y "opción 1" en la otra. No se pudo confirmar cuál es correcta.
+        </div>
+        <button class="market-trigger" data-modal-open="scotia">Ver contexto de mercado de Scotiabank →</button>
+        <details class="tree-toggle">
+          <summary>Ver árbol completo en texto</summary>
+          <pre class="tree-ascii">SCOTIABANK
+├── Opción 1: Bloqueo
+│   ├── Tipo doc: 1 DNI / 2 Carné extranjería
+│   ├── [Captura DNI]
+│   └── Tipo bloqueo
+│       ├── 1: Bloquear tarjetas → No identificado
+│       └── 2: Bloquear app → "no cuenta con afiliación digital"
+└── Otras consultas [requiere DNI]
+    ├── 0/1: Cheques Telebanking ⚠ → No identificado (discrepancia)
+    ├── 2: Membresía/cancelar tarjeta
+    │   ├── captura 4 díg. tarjeta + confirmación eco
+    │   ├── clave secreta + #
+    │   └── No identificado (corte de grabación)
+    ├── 3: Opción no identificada ⚠
+    └── 4: Otras consultas → No identificado</pre>
+        </details>
+      </div>
+
+      <div class="sim" id="sim-scotia">
+        <div class="sim-top">
+          <div class="live"><span class="pulse"></span>Simulador de llamada</div>
+          <div class="time" data-time>0:00</div>
+        </div>
+        <div class="breadcrumb" data-breadcrumb></div>
+        <div class="sim-body" data-body></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VEREDICTO ============ -->
+<section class="veredicto" id="veredicto" style="--accent:var(--teal)">
+  <div class="wrap">
+    <div class="eyebrow">El veredicto</div>
+    <h2 style="font-family:var(--display); text-transform:uppercase; font-size:clamp(32px,5vw,52px); line-height:1.05; margin-top:18px; max-width:760px; color:var(--ink-display);">Tres propuestas de valor, tres formas de hacer esperar al cliente.</h2>
+    <p style="color:var(--ink-dim); font-size:14.5px; line-height:1.7; max-width:640px; margin-top:18px;">La comparación que sigue está construida íntegramente sobre lo que cada IVR dijo en sus propias llamadas. El contexto de mercado (verificado, externo) está disponible aparte en el botón <button onclick="document.querySelector('[data-modal-open]').click()" style="background:none; border:none; padding:0; font:inherit; color:var(--accent); text-decoration:underline; cursor:pointer; font-weight:600;">"Mercado"</button> del menú superior — complementa, pero no reemplaza, lo que muestran las transcripciones.</p>
+
+    <div class="vp-grid">
+      <div class="vp-card" style="--accent:var(--bcp)">
+        <div class="bank">BCP</div>
+        <h3>Banca exclusiva con ejecutivo dedicado</h3>
+        <p>Apuesta por el vínculo personal: identifica al cliente por DNI y lo conecta con un Ejecutivo BEST. Fuerte para clientes premium, débil cuando el autoservicio falla y nadie deriva a un humano.</p>
+        <div class="chip-row">
+          <span class="chip tag-good">Deriva a Ejecutivo BEST</span>
+          <span class="chip tag-bad">Sin salida tras 2 timeouts</span>
+        </div>
+      </div>
+      <div class="vp-card" style="--accent:var(--bbva)">
+        <div class="bank">BBVA</div>
+        <h3>Autoservicio digital sin fricción de entrada</h3>
+        <p>El reconocimiento automático por teléfono es la mejor autenticación inicial de los tres. El árbol más profundo da más opciones de autogestión, a costa de más pasos para tareas simples.</p>
+        <div class="chip-row">
+          <span class="chip tag-good">Confirmas con 1 dígito</span>
+          <span class="chip">Hasta 5 niveles de menú</span>
+        </div>
+      </div>
+      <div class="vp-card" style="--accent:var(--scotia)">
+        <div class="bank">SCOTIABANK</div>
+        <h3>Seguridad primero, todo lo demás después</h3>
+        <p>El bloqueo de tarjeta es la opción 1, sin rodeos. Pero aplica ese mismo nivel de exigencia (documento + tarjeta + clave) incluso a consultas de bajo riesgo, como la comisión de membresía.</p>
+        <div class="chip-row">
+          <span class="chip tag-good">Bloqueo = opción 1</span>
+          <span class="chip tag-bad">Misma exigencia en todo trámite</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="matrix-wrap">
+      <table class="matrix">
+        <thead>
+          <tr><th>Métrica (basada en las transcripciones)</th><th>BCP</th><th>BBVA</th><th>Scotiabank</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="label">Niveles máx.</td><td>4</td><td><b>4–5</b></td><td>4</td></tr>
+          <tr><td class="label">Fricción auth. inicial</td><td>Media — pide tu DNI completo antes de cualquier autoservicio</td><td><b>Baja</b> — confirmas con 1 dígito; tu identidad ya se infiere por el número de teléfono</td><td>Alta — documento + tarjeta con eco de confirmación + clave secreta, en cascada</td></tr>
+          <tr><td class="label">Documento exigido para bloquear</td><td>DNI + confirmación, antes de elegir tipo de tarjeta</td><td>Identidad ya verificada al inicio de la llamada</td><td>Tipo doc. + DNI, después de elegir "bloqueo"</td></tr>
+          <tr><td class="label">Granularidad del bloqueo</td><td><b>Alta</b> — débito / crédito / todas por separado</td><td>Distingue app/banca por internet vs. compras rechazadas o tarjetas ya bloqueadas — sin separar débito/crédito</td><td>Solo "tarjetas" (sin distinguir débito/crédito) o app</td></tr>
+          <tr><td class="label">Confirmación por eco de datos</td><td>No identificada</td><td>No identificada</td><td><b>Sí</b> — repite los dígitos de tarjeta antes de continuar</td></tr>
+          <tr><td class="label">Mensajes promocionales en flujo de seguridad</td><td>No detectados</td><td>No detectados</td><td><b>Sí</b> — promoción de premios durante el bloqueo</td></tr>
+          <tr><td class="label">Asesor humano</td><td>Op. 3 y 4</td><td>Op. 2 y op. 4 (submenú)</td><td>Fallback genérico, sin tecla fija</td></tr>
+          <tr><td class="label">Encuesta de cierre</td><td>No identificada</td><td><b>Sí</b></td><td>No identificada</td></tr>
+          <tr><td class="label">Tiempo hasta el primer submenú (aprox.)</td><td>12s vía bloqueo · 58s vía consultas</td><td>30s tras confirmar identidad</td><td>21s vía bloqueo · 102s vía otras consultas</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="matrix-note">Los tiempos de navegación son aproximados, calculados a partir de las marcas de tiempo mostradas en cada simulador. No son directamente homologables entre bancos porque provienen de llamadas distintas, pero sí muestran qué tan rápido cada IVR te deja accionar — el dato clave para priorizar dónde mejorar la respuesta al cliente.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div class="l1">BENCHMARK IVR · BCP / BBVA / SCOTIABANK · BASADO EN 5 LLAMADAS REALES TRANSCRITAS</div>
+    <a href="#bcp">↑ Volver al inicio</a>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="market-modal" role="dialog" aria-modal="true" aria-labelledby="market-modal-title">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <h3 id="market-modal-title">Contexto de mercado</h3>
+        <p>Tecnología, IA y experiencia de cliente — información externa verificada, máx. 12 meses</p>
+      </div>
+      <button class="modal-close" id="modal-close-btn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab" data-tab="sistema">Sistema</button>
+      <button class="modal-tab" data-tab="bcp">BCP</button>
+      <button class="modal-tab" data-tab="bbva">BBVA</button>
+      <button class="modal-tab" data-tab="scotia">Scotiabank</button>
+    </div>
+    <div class="modal-panel" data-panel="sistema" style="--accent:var(--ink)">
+      <p class="mkt-intro">Cómo la IA conversacional y los agentes virtuales están entrando a la banca peruana — el contexto donde compiten los tres bancos de este benchmark.</p>
+      <div class="sys-stats">
+        <div><div class="n">7º / 19</div><div class="l">Posición de Perú en el Índice Latinoamericano de IA (ILIA) 2025 — categoría "Adoptante", por delante de Colombia y Ecuador<span class="src">ILIA 2025, may-2026</span></div></div>
+        <div><div class="n">3.9x</div><div class="l">Crecimiento proyectado en inversión de IA dentro del gasto de TI de empresas peruanas (2025-2026)<span class="src">Lenovo / IDC, may-2026</span></div></div>
+        <div><div class="n">3</div><div class="l">Sectores donde más se concentra la adopción de IA en Perú: banca, retail y telecomunicaciones<span class="src">SONDA Perú, feb-2026</span></div></div>
+        <div><div class="n">→ Agéntica</div><div class="l">El sector pasa de chatbots básicos a agentes de IA que ejecutan procesos completos, no solo responden preguntas<span class="src">El Peruano, nov-2025</span></div></div>
+      </div>
+    </div>
+    <div class="modal-panel" data-panel="bcp" style="--accent:var(--bcp)">
+      <ul class="mkt-list">
+        <li><b>Clara, su asistente de voz,</b> fue la primera implementación de IA generativa en atención telefónica de la banca peruana — relanzada en mayo de 2024 sobre su versión original de 2020.<span class="src">T21 / Mercado Negro, 2024-2025</span></li>
+        <li>Tras el upgrade con IA generativa, BCP redujo en <b>80% los tiempos de atención</b> en su Banca por Teléfono frente al menú tradicional.<span class="src">Mercado Negro, ene-2025</span></li>
+        <li>Clara ya resuelve cerca de <b>1 de cada 4 llamadas</b> de forma autónoma, y desde 2025 también opera por WhatsApp con IA generativa y más de 300 casos de uso.<span class="src">El Comercio, mar-jul 2025</span></li>
+        <li>A diferencia del IVR tradicional reconstruido en este benchmark, Clara entiende lenguaje natural y deriva a un asesor humano si detecta frustración o una urgencia real (p. ej. robo de tarjeta).<span class="src">Mercado Negro, ene-2025</span></li>
+      </ul>
+    </div>
+    <div class="modal-panel" data-panel="bbva" style="--accent:var(--bbva)">
+      <ul class="mkt-list">
+        <li><b>Blue, su asistente con IA</b> (lanzado en 2021), resolvió más de 3 millones de consultas y atendió a 1 millón de clientes a cierre de 2024; usa arquitectura multi-agente capaz de ejecutar operaciones simples sin salir del chat.<span class="src">BBVA, oct-2025</span></li>
+        <li><b>CUC, su asistente interno de IA:</b> reduce el tiempo de atención de consultas en 80% (de ~7.5 min a ~1 min), con 9.9/10 de valoración de sus usuarios.<span class="src">BBVA / OpenAI, nov-2025</span></li>
+        <li>Selló una <b>alianza estratégica global con OpenAI</b> ("Los Ocho") para rediseñar la banca con IA de extremo a extremo, incluida la experiencia de cliente.<span class="src">BBVA, dic-2025</span></li>
+        <li>Extiende ChatGPT Enterprise a sus más de 120,000 empleados a nivel global — una de las mayores implementaciones corporativas de esta tecnología.<span class="src">OpenAI, dic-2025–abr-2026</span></li>
+        <li>Su app mejoró +0.3 en su calificación de Google Play en la última evaluación, aunque sigue por debajo de 4 estrellas.<span class="src">Alerta Económica, set-2025</span></li>
+      </ul>
+    </div>
+    <div class="modal-panel" data-panel="scotia" style="--accent:var(--scotia)">
+      <ul class="mkt-list">
+        <li>En las fuentes consultadas, <b>no se identificó comunicación pública reciente</b> sobre un agente de IA generativa propio para atención al cliente en Scotiabank Perú — a diferencia de Clara (BCP) y Blue/CUC (BBVA).<span class="src">Búsqueda propia, jun-2026</span></li>
+        <li>Su Banca Telefónica (311-6000) se sigue describiendo como <b>"servicio automatizado o Asistente de Servicio"</b> — el mismo patrón de menú por tonos documentado en las transcripciones de este benchmark, sin mención de IA conversacional.<span class="src">Scotiabank Perú, canal oficial</span></li>
+        <li>A nivel institucional se posiciona como <b>"líderes en eficiencia"</b> dentro de su grupo financiero en Perú, aunque sin detalle público sobre virtual agents o IA generativa de cara al cliente.<span class="src">Scotiabank Perú</span></li>
+        <li>Su app mantiene una calificación estable en Google Play (+0.1), con reseñas recientes que reportan fallos recurrentes en Plin y cierres inesperados.<span class="src">Alerta Económica / Google Play, set-2025</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  // ---------- DATA: BCP ----------
+  const BCP = {
+    accent:'bcp',
+    start:'root',
+    nodes:{
+      root:{
+        time:'0:00', authType:'none',
+        prompt:'Bienvenido al Banco de Crédito BCP.',
+        options:[
+          {k:'0', label:'Perdiste o te robaron tu celular o tarjeta', next:'bcp_bloqueo_id'},
+          {k:'DNI', label:'Consultas personales — ingresa tu DNI', next:'best_menu'},
+          {k:'*', label:'Consultas de empresa — RUC u otro doc.', next:'empresa_na'},
+        ]
+      },
+      bcp_bloqueo_id:{
+        time:'0:12', authType:'new', authInfo:'DNI (o asterisco * para otro tipo de documento)',
+        prompt:'Identificación: ingresa tu DNI. Para otros tipos de documento, marca asterisco (*).',
+        options:[
+          {k:'→', label:'DNI ingresado — continuar', next:'bcp_bloqueo_confirm'},
+          {k:'*', label:'Otro tipo de documento', next:'bcp_bloqueo_otrodoc_na'},
+        ]
+      },
+      bcp_bloqueo_otrodoc_na:{ terminal:true, kind:'unknown', time:'0:18', friction:'—', text:'No identificado / pendiente de audio para el flujo con un documento distinto al DNI.' },
+      bcp_bloqueo_confirm:{
+        time:'0:20', authType:'new', authInfo:'Confirmar el documento ingresado',
+        prompt:'Confirmación de documento.',
+        options:[
+          {k:'1', label:'Confirmar', next:'bcp_bloqueo_tipo'},
+          {k:'2', label:'Ingresar tu documento nuevamente', next:'bcp_bloqueo_id'},
+        ]
+      },
+      bcp_bloqueo_tipo:{
+        time:'0:28', authType:'session', authInfo:'Documento ya confirmado',
+        prompt:'¿Qué deseas bloquear?',
+        options:[
+          {k:'1', label:'Bloquear tarjeta de débito', next:'bcp_bloq_debito'},
+          {k:'2', label:'Bloquear tarjeta de crédito', next:'bcp_bloq_credito'},
+          {k:'3', label:'Bloquear todas tus tarjetas', next:'bcp_bloq_todas'},
+        ]
+      },
+      bcp_bloq_debito:{ terminal:true, kind:'ok', time:'0:35', friction:'Bajo', text:'Solicita el bloqueo de tu tarjeta de débito.', note:'No se cuenta con el mensaje de cierre/confirmación final en la transcripción disponible.' },
+      bcp_bloq_credito:{ terminal:true, kind:'ok', time:'0:35', friction:'Bajo', text:'Solicita el bloqueo de tu tarjeta de crédito.', note:'No se cuenta con el mensaje de cierre/confirmación final en la transcripción disponible.' },
+      bcp_bloq_todas:{ terminal:true, kind:'ok', time:'0:35', friction:'Bajo', text:'Solicita el bloqueo de todas tus tarjetas.', note:'No se cuenta con el mensaje de cierre/confirmación final en la transcripción disponible.' },
+      empresa_na:{ terminal:true, kind:'unknown', time:'0:20', friction:'—', text:'No identificado / pendiente de audio. La rama de consultas de empresa no fue explorada.' },
+      best_menu:{
+        time:'0:58', authType:'session', authInfo:'Ya identificado por tu DNI',
+        prompt:'Bienvenido a la Banca Exclusiva Digital BCP. Tu Ejecutivo BEST está listo para ayudarte.',
+        note:'⚠️ Discrepancia entre grabaciones: el horario de sábado se anunció como "10am–1pm" en una llamada y "10am–9pm" en la otra.',
+        options:[
+          {k:'1', label:'Saldos y movimientos', next:'saldos'},
+          {k:'2', label:'Adquirir o cancelar tarjeta de crédito', next:'tarjeta_menu'},
+          {k:'3', label:'Que te contacten por WhatsApp', next:'whatsapp'},
+          {k:'4', label:'Comunicarte con tu Ejecutivo BEST digital', next:'asesor'},
+        ]
+      },
+      saldos:{ terminal:true, kind:'unknown', time:'1:10', friction:'Medio', text:'Pide los últimos 4 dígitos de tu tarjeta (o * para volver).', note:'⚠️ Mensaje contradictorio: justo después advierte que "es necesario que tengas el número completo de tu tarjeta". La grabación no continúa tras la captura de dígitos.' },
+      tarjeta_menu:{
+        time:'1:40', authType:'session', authInfo:'Continúa tu sesión ya identificada',
+        prompt:'Activar o cancelar tarjeta de crédito.',
+        options:[
+          {k:'1', label:'Activar tarjeta de crédito', next:'activar_na'},
+          {k:'2', label:'Cancelar tarjeta de crédito', next:'cancelar_na'},
+          {k:'⏱', label:'No responder — como en la llamada real', next:'timeout_fail', ghost:true},
+        ]
+      },
+      activar_na:{ terminal:true, kind:'unknown', time:'1:50', friction:'—', text:'No identificado / pendiente de audio para esta subopción específica.' },
+      cancelar_na:{ terminal:true, kind:'unknown', time:'1:50', friction:'—', text:'No identificado / pendiente de audio para esta subopción específica.' },
+      timeout_fail:{ terminal:true, kind:'warn', time:'2:30', friction:'Alto', text:'Resultado real observado: el sistema no recibió respuesta ("Lo siento, no recibí la información"), repitió el submenú y, tras un segundo timeout, cerró la llamada ("Gracias por llamar al Banco de Crédito BCP") sin ofrecer derivación a asesor.' },
+      whatsapp:{ terminal:true, kind:'ok', time:'1:45', friction:'Bajo', text:'Derivación al canal WhatsApp. No se exploró el flujo posterior a la derivación.' },
+      asesor:{ terminal:true, kind:'ok', time:'1:45', friction:'Bajo', text:'Derivación a tu Ejecutivo BEST digital (asesor humano). No se exploró el flujo posterior.' },
+    }
+  };
+
+  // ---------- DATA: BBVA ----------
+  const BBVA = {
+    accent:'bbva',
+    start:'root',
+    nodes:{
+      root:{
+        time:'0:00', authType:'new', authInfo:'Confirmar identidad detectada por tu número de teléfono (1 = sí, 2 = no)',
+        prompt:'"Qué gusto saludarte de nuevo. Por tu número de teléfono, veo que eres [cliente]. ¿Es correcto?"',
+        options:[
+          {k:'1', label:'Confirmar identidad', next:'menu'},
+          {k:'2', label:'No es correcto', next:'id_na'},
+        ]
+      },
+      id_na:{ terminal:true, kind:'unknown', time:'0:15', friction:'—', text:'No identificado / pendiente de audio. La rama de identidad no confirmada no fue explorada.' },
+      menu:{
+        time:'0:30', authType:'session', authInfo:'Identidad ya confirmada por teléfono',
+        prompt:'Menú principal BBVA.',
+        options:[
+          {k:'1', label:'Bloquear tarjetas o app BBVA / compras rechazadas', next:'bloqueo_menu'},
+          {k:'2', label:'Consultar campañas o contratar productos', next:'campanas'},
+          {k:'3', label:'Tin Link, token digital o consultas del app BBVA', next:'tlink_menu'},
+        ]
+      },
+      bloqueo_menu:{
+        time:'0:50', authType:'session', authInfo:'Sesión ya identificada',
+        prompt:'Bloqueo de tarjetas o app.',
+        options:[
+          {k:'1', label:'Bloquear app BBVA o banca por internet', next:'bloq1_na'},
+          {k:'2', label:'Compras rechazadas o tarjetas bloqueadas', next:'bloq2_na'},
+          {k:'3', label:'Regresar al menú principal', next:'menu'},
+        ]
+      },
+      bloq1_na:{ terminal:true, kind:'unknown', time:'1:10', friction:'—', text:'No identificado / pendiente de audio. No se exploró el resultado final de esta subopción.' },
+      bloq2_na:{ terminal:true, kind:'unknown', time:'1:10', friction:'—', text:'No identificado / pendiente de audio. No se exploró el resultado final de esta subopción.' },
+      campanas:{ terminal:true, kind:'ok', time:'1:40', friction:'Bajo', text:'Aviso: "esta conversación puede ser grabada." → "En breve será atendido por un asesor." Derivación directa a un asesor humano, sin submenú adicional.' },
+      tlink_menu:{
+        time:'2:32', authType:'session', authInfo:'Sesión ya identificada',
+        prompt:'Consultas de Tin Link, activación de token digital o consultas del app BBVA.',
+        options:[
+          {k:'1', label:'Consultas de Tin Link', next:'tlink_sub'},
+          {k:'2', label:'Activar token digital', next:'token_sub'},
+          {k:'3', label:'Afiliación o configuración de la app BBVA', next:'app_sub'},
+          {k:'4', label:'Conversar con un asesor (problemas con la app)', next:'asesor2'},
+          {k:'5', label:'Volver al menú principal', next:'menu'},
+        ]
+      },
+      asesor2:{ terminal:true, kind:'ok', time:'3:00', friction:'Bajo', text:'Derivación a un asesor por inconvenientes con la app BBVA. No se exploró el flujo posterior.' },
+      tlink_sub:{
+        time:'2:45', authType:'session', authInfo:'Sesión ya identificada',
+        prompt:'Tin Link.',
+        options:[
+          {k:'1', label:'Paso a paso de afiliación y uso de Tin Link', next:'tlink1_na'},
+          {k:'2', label:'Estado de transferencias / reportar inconvenientes', next:'tlink2_na'},
+          {k:'3', label:'Volver al menú anterior', next:'tlink_menu'},
+        ]
+      },
+      tlink1_na:{ terminal:true, kind:'unknown', time:'3:00', friction:'—', text:'No identificado / pendiente de audio.' },
+      tlink2_na:{ terminal:true, kind:'unknown', time:'3:00', friction:'—', text:'No identificado / pendiente de audio.' },
+      token_sub:{
+        time:'2:57', authType:'session', authInfo:'Sesión ya identificada',
+        prompt:'Tenemos tres opciones para activar tu token digital.',
+        options:[
+          {k:'1', label:'Con tarjeta sin contacto', next:'token_fail'},
+          {k:'2', label:'Tomando fotos de DNI y selfie', next:'token_fail'},
+          {k:'3', label:'Desde un cajero automático', next:'token_fail'},
+        ]
+      },
+      token_fail:{ terminal:true, kind:'warn', time:'6:04', friction:'Alto', text:'Resultado real observado: "El número que ha marcado es incorrecto" se repitió en 3 intentos consecutivos → "Gracias por utilizar nuestro autoservicio."', note:'Justo después, encuesta de cierre: "Marque 1 si su consulta fue solucionada, o 2 si no fue solucionada." Único banco de los tres con esta práctica detectada.' },
+      app_sub:{
+        time:'6:28', authType:'session', authInfo:'Sesión ya identificada',
+        prompt:'Afiliación o configuración de la app BBVA.',
+        options:[
+          {k:'1', label:'Paso a paso de afiliación al app', next:'app1_na'},
+          {k:'2', label:'Paso a paso de reseteo de contraseña', next:'app2_na'},
+          {k:'3', label:'Paso a paso de prender y apagar tu tarjeta', next:'app3_result'},
+          {k:'4', label:'Volver al menú anterior', next:'tlink_menu'},
+        ]
+      },
+      app1_na:{ terminal:true, kind:'unknown', time:'6:40', friction:'—', text:'No identificado / pendiente de audio.' },
+      app2_na:{ terminal:true, kind:'unknown', time:'6:40', friction:'—', text:'No identificado / pendiente de audio.' },
+      app3_result:{ terminal:true, kind:'ok', time:'7:10', friction:'Medio', text:'"Parece que su tarjeta se encuentra vencida. Por favor, acérquese a nuestras oficinas con su DNI para recoger su nueva tarjeta."', note:'Después ofrece: 1 = repetir la información, 2 = regresar al menú principal.' },
+    }
+  };
+
+  // ---------- DATA: SCOTIABANK ----------
+  const SCOTIA = {
+    accent:'scotia',
+    start:'root',
+    nodes:{
+      root:{
+        time:'0:00', authType:'none',
+        prompt:'Bienvenido a Scotiabank.',
+        options:[
+          {k:'1', label:'Bloquear tarjetas, app móvil, alertas o movimientos no reconocidos', next:'doc_menu'},
+          {k:'·', label:'Otras consultas — requiere DNI o carné de extranjería', next:'consultas_doc'},
+        ]
+      },
+      doc_menu:{
+        time:'0:21', authType:'new', authInfo:'Tipo de documento — 1: DNI / 2: Carné de extranjería',
+        prompt:'Tipo de documento para el bloqueo.',
+        note:'⚠️ En este mismo tramo el IVR real intercala un mensaje promocional sobre "premios y promociones" antes de continuar — mal timing dentro de un flujo de seguridad.',
+        options:[
+          {k:'1', label:'DNI', next:'capture_doc'},
+          {k:'2', label:'Carné de extranjería', next:'capture_doc'},
+        ]
+      },
+      capture_doc:{
+        time:'0:40', authType:'new', authInfo:'Número de documento de la tarjeta a bloquear',
+        prompt:'Ingrese el número de documento de la tarjeta que va a bloquear.',
+        options:[ {k:'→', label:'Continuar', next:'bloqueo_tipo'} ]
+      },
+      bloqueo_tipo:{
+        time:'1:00', authType:'session', authInfo:'Documento ya capturado',
+        prompt:'Tipo de bloqueo.',
+        options:[
+          {k:'1', label:'Bloquear tarjetas', next:'bloq_tarjetas_na'},
+          {k:'2', label:'Bloquear aplicativo Scotiabank', next:'bloq_app_result'},
+        ]
+      },
+      bloq_tarjetas_na:{ terminal:true, kind:'unknown', time:'1:10', friction:'—', text:'No identificado / pendiente de audio. El usuario cambió hacia "otras consultas" antes de completar este flujo.' },
+      bloq_app_result:{ terminal:true, kind:'warn', time:'1:30', friction:'Medio', text:'Resultado real: "Usted no cuenta con la afiliación digital." El sistema repite el submenú de tipo de bloqueo, sin completar la acción.' },
+      consultas_doc:{
+        time:'0:21', authType:'new', authInfo:'DNI o carné de extranjería',
+        prompt:'Para otras consultas, ingrese su número de DNI o carné de extranjería.',
+        options:[ {k:'→', label:'Continuar', next:'consultas_menu'} ]
+      },
+      consultas_menu:{
+        time:'1:42', authType:'session', authInfo:'Documento ya ingresado',
+        prompt:'Menú de consultas.',
+        options:[
+          {k:'0/1', label:'Cheques Telebanking pendientes de cobro', next:'cheques_na'},
+          {k:'2', label:'Comisión de Membresía Anual / cancelar tarjeta', next:'membresia_auth'},
+          {k:'3', label:'Opción no identificada', next:'opcion3_na', ghost:true},
+          {k:'4', label:'Otras consultas', next:'otras_na'},
+        ]
+      },
+      cheques_na:{ terminal:true, kind:'unknown', time:'1:50', friction:'—', text:'No identificado / pendiente de audio.', note:'⚠️ Discrepancia: esta opción se anuncia como "marque 0" en una grabación y "marque 1" en la otra. No se pudo confirmar cuál es correcta.' },
+      opcion3_na:{ terminal:true, kind:'unknown', time:'1:50', friction:'—', text:'Opción no identificada: el audio salta de la opción 2 a la opción 4 en ambas grabaciones disponibles. El contenido de la opción 3 no pudo confirmarse.' },
+      otras_na:{ terminal:true, kind:'unknown', time:'1:50', friction:'—', text:'No identificado / pendiente de audio para este catch-all.' },
+      membresia_auth:{
+        time:'3:00', authType:'new', authInfo:'4 últimos dígitos de tarjeta de débito/crédito',
+        prompt:'Ingrese los 4 últimos dígitos de su tarjeta de débito o crédito Scotiabank.',
+        options:[ {k:'→', label:'Continuar', next:'membresia_confirm'} ]
+      },
+      membresia_confirm:{
+        time:'3:30', authType:'new', authInfo:'Confirmar dígitos ingresados (1 = sí, 2 = no)',
+        prompt:'"Ha ingresado [dígitos]. ¿Es correcto?"',
+        options:[
+          {k:'1', label:'Sí, es correcto', next:'membresia_clave'},
+          {k:'2', label:'No — reintentar', next:'membresia_auth'},
+        ]
+      },
+      membresia_clave:{
+        time:'3:55', authType:'new', authInfo:'Clave secreta / clave de seguridad + tecla #',
+        prompt:'Ingrese su clave secreta o clave de seguridad, seguida de la tecla numeral (#).',
+        options:[ {k:'→', label:'Continuar', next:'membresia_result'} ]
+      },
+      membresia_result:{ terminal:true, kind:'unknown', time:'4:17', friction:'Alto', text:'No identificado / pendiente de audio. La grabación se corta durante esta etapa de autenticación, antes de revelar el resultado de la consulta.' },
+    }
+  };
+
+  const TREES = { bcp:BCP, bbva:BBVA, scotia:SCOTIA };
+  const state = {};
+
+  function iconFor(kind){
+    if(kind==='warn') return '<span class="result-icon warn">⚠ Hallazgo real</span>';
+    if(kind==='ok') return '<span class="result-icon ok">✓ Derivación</span>';
+    return '<span class="result-icon unknown">? No identificado</span>';
+  }
+
+  function authBadge(node){
+    if(node.authType==='new'){
+      return '<span class="chip tag-bad">🔒 Solicita: '+(node.authInfo||'autenticación')+'</span>';
+    }
+    if(node.authType==='session'){
+      return '<span class="chip tag-good">🔐 '+(node.authInfo||'Sesión ya autenticada')+'</span>';
+    }
+    return '<span class="chip">🔓 Sin autenticación</span>';
+  }
+
+  function render(bankKey){
+    const tree = TREES[bankKey];
+    const nodeId = state[bankKey].current;
+    const node = tree.nodes[nodeId];
+    const container = document.getElementById('sim-'+bankKey);
+    const body = container.querySelector('[data-body]');
+    const crumbWrap = container.querySelector('[data-breadcrumb]');
+    const timeEl = container.querySelector('[data-time]');
+
+    timeEl.textContent = node.time || '—';
+
+    crumbWrap.innerHTML = state[bankKey].path.map((p,i) =>
+      (i>0 ? '<span class="arrow">→</span>' : '') + '<span class="crumb">'+p+'</span>'
+    ).join('');
+
+    if(node.terminal){
+      body.innerHTML = `
+        <div class="result-card">
+          <div class="result-head">${iconFor(node.kind)}</div>
+          <div class="result-text">${node.text}</div>
+          ${node.note ? '<div class="prompt-note">'+node.note+'</div>' : ''}
+          <div class="result-meta">
+            <span class="chip"><span class="dot"></span>Fricción: <b>${node.friction}</b></span>
+          </div>
+          <button class="reset-btn" data-reset>↻ Reiniciar llamada</button>
+        </div>`;
+    } else {
+      body.innerHTML = `
+        <div class="prompt-box">
+          <span class="pq">IVR dice</span>
+          ${node.prompt}
+          ${node.note ? '<div class="prompt-note">'+node.note+'</div>' : ''}
+        </div>
+        <div class="opt-grid">
+          ${node.options.map(o => `
+            <button class="opt-btn ${o.ghost?'ghost':''}" data-next="${o.next}" data-label="${o.k}: ${o.label.replace(/"/g,'&quot;')}">
+              <span class="k">${o.k}</span><span>${o.label}</span>
+            </button>`).join('')}
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; padding-bottom:8px; margin-top:auto;">
+          ${authBadge(node)}
+        </div>`;
+    }
+
+    body.querySelectorAll('[data-next]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        state[bankKey].path.push(btn.dataset.label);
+        state[bankKey].current = btn.dataset.next;
+        render(bankKey);
+      });
+    });
+    const resetBtn = body.querySelector('[data-reset]');
+    if(resetBtn){
+      resetBtn.addEventListener('click', ()=>{
+        state[bankKey] = { current: tree.start, path: [] };
+        render(bankKey);
+      });
+    }
+  }
+
+  Object.keys(TREES).forEach(bankKey=>{
+    state[bankKey] = { current: TREES[bankKey].start, path: [] };
+    render(bankKey);
+  });
+
+  // ---------- modal: contexto de mercado ----------
+  const marketModal = document.getElementById('market-modal');
+  const modalTabs = marketModal.querySelectorAll('.modal-tab');
+  const modalPanels = marketModal.querySelectorAll('.modal-panel');
+
+  function setMarketTab(bankKey){
+    modalTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === bankKey));
+    modalPanels.forEach(p => p.classList.toggle('active', p.dataset.panel === bankKey));
+  }
+
+  function openMarketModal(bankKey){
+    setMarketTab(bankKey || 'sistema');
+    marketModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMarketModal(){
+    marketModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('[data-modal-open]').forEach(btn=>{
+    btn.addEventListener('click', () => openMarketModal(btn.dataset.modalOpen));
+  });
+  modalTabs.forEach(t => t.addEventListener('click', () => setMarketTab(t.dataset.tab)));
+  document.getElementById('modal-close-btn').addEventListener('click', closeMarketModal);
+  marketModal.addEventListener('click', (e) => { if(e.target === marketModal) closeMarketModal(); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeMarketModal(); });
+
+})();
+</script>
+
+</body>
+</html>
