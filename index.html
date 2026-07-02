@@ -186,8 +186,9 @@
   .bank-grid{ display:grid; grid-template-columns:300px 1fr; gap:32px; align-items:start; }
   @media (max-width:920px){
     .bank-grid{ grid-template-columns:1fr; }
-    .bank-grid .sim{ order:-1; }
+    .bank-grid .sim-col{ order:-1; }
   }
+  .sim-col{ display:flex; flex-direction:column; min-width:0; }
 
   .id-panel p.desc{ color:var(--ink-dim); font-size:14.5px; line-height:1.7; margin-bottom:22px; }
   .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px; }
@@ -267,6 +268,58 @@
     background:var(--bg-soft); border:none; border-radius:var(--radius-pill); color:var(--ink); padding:11px 18px; cursor:pointer; transition:.15s;
   }
   .reset-btn:hover{ background:var(--ink); color:#fff; }
+
+  /* ---------- sim/diagram tabs ---------- */
+  .sim-tabs{ display:flex; gap:8px; margin-bottom:14px; }
+  .sim-tab{
+    font-family:var(--body); font-size:13px; font-weight:600; padding:9px 17px;
+    border-radius:var(--radius-pill); border:1px solid var(--line); background:var(--bg-card);
+    color:var(--ink-dim); cursor:pointer; transition:.15s;
+  }
+  .sim-tab.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .sim-tab:hover:not(.active){ border-color:var(--accent); color:var(--accent); }
+
+  /* ---------- flow diagram ---------- */
+  .flow-card{
+    background:var(--bg-card); border-radius:var(--radius-lg); box-shadow:var(--shadow-md);
+    border:1px solid var(--line-soft); min-height:440px; display:flex; flex-direction:column;
+  }
+  .flow-legend{ display:flex; flex-wrap:wrap; gap:8px 14px; padding:20px 24px 0; }
+  .flow-legend .lg-item{ display:flex; align-items:center; gap:6px; font-family:var(--body); font-size:11.5px; color:var(--ink-dim); }
+  .flow-legend .lg-dot{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; }
+  .flow-wrap{ overflow-x:auto; overflow-y:hidden; padding:16px 24px 26px; flex:1; }
+
+  .flow-tree, .flow-tree ul{ list-style:none; margin:0; padding:0; }
+  .flow-tree{ display:flex; justify-content:flex-start; }
+  .flow-tree li{ display:flex; flex-direction:column; align-items:center; position:relative; padding:22px 10px 0; }
+  .flow-tree > li{ padding-top:0; }
+  .flow-tree li ul{ display:flex; padding-top:22px; position:relative; }
+  .flow-tree li > ul::before{
+    content:''; position:absolute; top:0; left:50%; width:0; height:22px; border-left:2px solid var(--line);
+  }
+  .flow-tree li::before, .flow-tree li::after{
+    content:''; position:absolute; top:0; width:50%; height:22px; border-top:2px solid var(--line);
+  }
+  .flow-tree li::before{ right:50%; }
+  .flow-tree li::after{ left:50%; border-left:2px solid var(--line); }
+  .flow-tree li:only-child::before, .flow-tree li:only-child::after{ display:none; }
+  .flow-tree li:only-child{ padding-top:0; }
+  .flow-tree > li:only-child > ul::before{ display:none; }
+  .flow-tree li:first-child::before, .flow-tree li:last-child::after{ border:0 none; }
+  .flow-tree li:last-child::before{ border-right:2px solid var(--line); border-radius:0 6px 0 0; }
+  .flow-tree li:first-child::after{ border-radius:6px 0 0 0; }
+
+  .flow-node{
+    display:inline-block; padding:10px 13px; border-radius:10px; border:1px solid var(--line);
+    background:var(--bg-card); font-family:var(--body); font-size:11.5px; font-weight:500; line-height:1.35;
+    color:var(--ink); white-space:normal; width:150px; box-shadow:var(--shadow-sm);
+  }
+  .flow-node.root{ border-color:var(--accent); border-width:2px; font-weight:700; background:var(--bg-soft); }
+  .flow-node.terminal-ok{ background:rgba(5,122,108,.07); border-color:rgba(5,122,108,.35); color:var(--teal); }
+  .flow-node.terminal-warn{ background:rgba(184,40,26,.07); border-color:rgba(184,40,26,.35); color:var(--r-bad); }
+  .flow-node.terminal-unknown{ background:var(--bg-soft); border-color:var(--line); color:var(--ink-faint); }
+  .flow-node.loop{ background:var(--bg-soft); border-style:dashed; color:var(--ink-faint); font-style:italic; }
+
 
   /* ---------- veredicto ---------- */
   .veredicto{ padding:90px 0; }
@@ -381,6 +434,11 @@
         </details>
       </div>
 
+      <div class="sim-col">
+      <div class="sim-tabs">
+        <button class="sim-tab active" data-view-btn="bcp" data-view="live">Simulador</button>
+        <button class="sim-tab" data-view-btn="bcp" data-view="diagram">Diagrama de flujo</button>
+      </div>
       <div class="sim" id="sim-bcp">
         <div class="sim-top">
           <div class="live"><span class="pulse"></span>Simulador de llamada</div>
@@ -388,6 +446,80 @@
         </div>
         <div class="breadcrumb" data-breadcrumb></div>
         <div class="sim-body" data-body></div>
+      </div>
+      <div class="flow-card" id="flow-bcp" style="display:none;">
+        <div class="flow-legend">
+          <span class="lg-item"><span class="lg-dot" style="background:var(--teal)"></span>Deriva / resuelve</span>
+          <span class="lg-item"><span class="lg-dot" style="background:var(--r-bad)"></span>Falla real observada</span>
+          <span class="lg-item"><span class="lg-dot" style="background:var(--ink-faint)"></span>No identificado</span>
+        </div>
+        <div class="flow-wrap">
+          <ul class="flow-tree">
+            <li>
+              <div class="flow-node root">BCP · Menú raíz</div>
+              <ul>
+                <li>
+                  <div class="flow-node">0 · Robo o pérdida</div>
+                  <ul>
+                    <li>
+                      <div class="flow-node">Identifícate: DNI o *</div>
+                      <ul>
+                        <li>
+                          <div class="flow-node">→ DNI ingresado</div>
+                          <ul>
+                            <li>
+                              <div class="flow-node">Confirmar documento</div>
+                              <ul>
+                                <li>
+                                  <div class="flow-node">1 · Confirmar</div>
+                                  <ul>
+                                    <li>
+                                      <div class="flow-node">¿Qué bloquear?</div>
+                                      <ul>
+                                        <li><div class="flow-node terminal-ok">1 · Débito ✓</div></li>
+                                        <li><div class="flow-node terminal-ok">2 · Crédito ✓</div></li>
+                                        <li><div class="flow-node terminal-ok">3 · Todas ✓</div></li>
+                                      </ul>
+                                    </li>
+                                  </ul>
+                                </li>
+                                <li><div class="flow-node loop">2 · Reingresar ↩</div></li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                        <li><div class="flow-node terminal-unknown">* · Otro doc ❓</div></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <div class="flow-node">DNI · Consultas personales</div>
+                  <ul>
+                    <li>
+                      <div class="flow-node">Menú BEST</div>
+                      <ul>
+                        <li><div class="flow-node terminal-unknown">1 · Saldos y mov. ❓</div></li>
+                        <li>
+                          <div class="flow-node">2 · Activar/cancelar</div>
+                          <ul>
+                            <li><div class="flow-node terminal-unknown">1 · Activar ❓</div></li>
+                            <li><div class="flow-node terminal-unknown">2 · Cancelar ❓</div></li>
+                            <li><div class="flow-node terminal-warn">⏱ Sin respuesta → corte ⚠</div></li>
+                          </ul>
+                        </li>
+                        <li><div class="flow-node terminal-ok">3 · WhatsApp ✓</div></li>
+                        <li><div class="flow-node terminal-ok">4 · Ejecutivo BEST ✓</div></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li><div class="flow-node terminal-unknown">* · Empresa (RUC) ❓</div></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
       </div>
     </div>
   </div>
@@ -446,6 +578,11 @@
         </details>
       </div>
 
+      <div class="sim-col">
+      <div class="sim-tabs">
+        <button class="sim-tab active" data-view-btn="bbva" data-view="live">Simulador</button>
+        <button class="sim-tab" data-view-btn="bbva" data-view="diagram">Diagrama de flujo</button>
+      </div>
       <div class="sim" id="sim-bbva">
         <div class="sim-top">
           <div class="live"><span class="pulse"></span>Simulador de llamada</div>
@@ -453,6 +590,68 @@
         </div>
         <div class="breadcrumb" data-breadcrumb></div>
         <div class="sim-body" data-body></div>
+      </div>
+      <div class="flow-card" id="flow-bbva" style="display:none;">
+        <div class="flow-legend">
+          <span class="lg-item"><span class="lg-dot" style="background:var(--teal)"></span>Deriva / resuelve</span>
+          <span class="lg-item"><span class="lg-dot" style="background:var(--r-bad)"></span>Falla real observada</span>
+          <span class="lg-item"><span class="lg-dot" style="background:var(--ink-faint)"></span>No identificado</span>
+        </div>
+        <div class="flow-wrap">
+          <ul class="flow-tree">
+            <li>
+              <div class="flow-node root">BBVA · Identificación por teléfono</div>
+              <ul>
+                <li>
+                  <div class="flow-node">1 · Confirmar identidad</div>
+                  <ul>
+                    <li>
+                      <div class="flow-node">Menú principal</div>
+                      <ul>
+                        <li>
+                          <div class="flow-node">1 · Bloqueo/compras rechazadas</div>
+                          <ul>
+                            <li><div class="flow-node terminal-unknown">1 · Bloquear app ❓</div></li>
+                            <li><div class="flow-node terminal-unknown">2 · Compras rechazadas ❓</div></li>
+                            <li><div class="flow-node loop">3 · Volver ↩</div></li>
+                          </ul>
+                        </li>
+                        <li><div class="flow-node terminal-ok">2 · Campañas/productos ✓ asesor</div></li>
+                        <li>
+                          <div class="flow-node">3 · Tin Link/token/app</div>
+                          <ul>
+                            <li>
+                              <div class="flow-node">1 · Tin Link</div>
+                              <ul>
+                                <li><div class="flow-node terminal-unknown">1 · Afiliación y uso ❓</div></li>
+                                <li><div class="flow-node terminal-unknown">2 · Estado transf. ❓</div></li>
+                                <li><div class="flow-node loop">3 · Volver ↩</div></li>
+                              </ul>
+                            </li>
+                            <li><div class="flow-node terminal-warn">2 · Token digital ⚠ 3 errores → cierre</div></li>
+                            <li>
+                              <div class="flow-node">3 · Afiliación/config. app</div>
+                              <ul>
+                                <li><div class="flow-node terminal-unknown">1 · Afiliación ❓</div></li>
+                                <li><div class="flow-node terminal-unknown">2 · Reset contraseña ❓</div></li>
+                                <li><div class="flow-node terminal-ok">3 · Prender/apagar ✓ vencida→oficina</div></li>
+                                <li><div class="flow-node loop">4 · Volver ↩</div></li>
+                              </ul>
+                            </li>
+                            <li><div class="flow-node terminal-ok">4 · Asesor (app) ✓</div></li>
+                            <li><div class="flow-node loop">5 · Volver al menú ↩</div></li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li><div class="flow-node terminal-unknown">2 · No es correcto ❓</div></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
       </div>
     </div>
   </div>
@@ -504,6 +703,11 @@
         </details>
       </div>
 
+      <div class="sim-col">
+      <div class="sim-tabs">
+        <button class="sim-tab active" data-view-btn="scotia" data-view="live">Simulador</button>
+        <button class="sim-tab" data-view-btn="scotia" data-view="diagram">Diagrama de flujo</button>
+      </div>
       <div class="sim" id="sim-scotia">
         <div class="sim-top">
           <div class="live"><span class="pulse"></span>Simulador de llamada</div>
@@ -511,6 +715,80 @@
         </div>
         <div class="breadcrumb" data-breadcrumb></div>
         <div class="sim-body" data-body></div>
+      </div>
+      <div class="flow-card" id="flow-scotia" style="display:none;">
+        <div class="flow-legend">
+          <span class="lg-item"><span class="lg-dot" style="background:var(--teal)"></span>Deriva / resuelve</span>
+          <span class="lg-item"><span class="lg-dot" style="background:var(--r-bad)"></span>Falla real observada</span>
+          <span class="lg-item"><span class="lg-dot" style="background:var(--ink-faint)"></span>No identificado</span>
+        </div>
+        <div class="flow-wrap">
+          <ul class="flow-tree">
+            <li>
+              <div class="flow-node root">Scotiabank · Menú raíz</div>
+              <ul>
+                <li>
+                  <div class="flow-node">1 · Bloqueo</div>
+                  <ul>
+                    <li>
+                      <div class="flow-node">1 DNI · 2 Carné extranjería</div>
+                      <ul>
+                        <li>
+                          <div class="flow-node">Captura de documento</div>
+                          <ul>
+                            <li>
+                              <div class="flow-node">Tipo de bloqueo</div>
+                              <ul>
+                                <li><div class="flow-node terminal-unknown">1 · Bloquear tarjetas ❓</div></li>
+                                <li><div class="flow-node terminal-warn">2 · Bloquear app ⚠ sin afiliación digital</div></li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <div class="flow-node">· Otras consultas (DNI/carné)</div>
+                  <ul>
+                    <li>
+                      <div class="flow-node">Menú de consultas</div>
+                      <ul>
+                        <li><div class="flow-node terminal-unknown">0/1 · Cheques Telebanking ❓</div></li>
+                        <li>
+                          <div class="flow-node">2 · Membresía/cancelar</div>
+                          <ul>
+                            <li>
+                              <div class="flow-node">Captura tarjeta (4 díg.)</div>
+                              <ul>
+                                <li>
+                                  <div class="flow-node">Confirmar dígitos (eco)</div>
+                                  <ul>
+                                    <li>
+                                      <div class="flow-node">1 · Sí, correcto</div>
+                                      <ul>
+                                        <li><div class="flow-node terminal-unknown">Clave secreta + # ❓ corte</div></li>
+                                      </ul>
+                                    </li>
+                                    <li><div class="flow-node loop">2 · Reintentar ↩</div></li>
+                                  </ul>
+                                </li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                        <li><div class="flow-node terminal-unknown">3 · Opción no identificada ❓</div></li>
+                        <li><div class="flow-node terminal-unknown">4 · Otras consultas ❓</div></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
       </div>
     </div>
   </div>
@@ -983,6 +1261,19 @@
   document.getElementById('modal-close-btn').addEventListener('click', closeMarketModal);
   marketModal.addEventListener('click', (e) => { if(e.target === marketModal) closeMarketModal(); });
   document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeMarketModal(); });
+
+  // ---------- sim / diagram tabs ----------
+  document.querySelectorAll('.sim-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const bankKey = btn.dataset.viewBtn;
+      const view = btn.dataset.view;
+      document.querySelectorAll('.sim-tab[data-view-btn="'+bankKey+'"]').forEach(b => b.classList.toggle('active', b === btn));
+      const simEl = document.getElementById('sim-'+bankKey);
+      const flowEl = document.getElementById('flow-'+bankKey);
+      if(simEl) simEl.style.display = (view === 'live') ? '' : 'none';
+      if(flowEl) flowEl.style.display = (view === 'diagram') ? 'flex' : 'none';
+    });
+  });
 
 })();
 </script>
