@@ -320,6 +320,18 @@
   .flow-node.terminal-unknown{ background:var(--bg-soft); border-color:var(--line); color:var(--ink-faint); }
   .flow-node.loop{ background:var(--bg-soft); border-style:dashed; color:var(--ink-faint); font-style:italic; }
 
+  /* ---------- upgrade comparison (dentro de la pestaña Diagrama) ---------- */
+  .upgrade-block{ padding:4px 24px 24px; border-top:1px solid var(--line-soft); margin-top:6px; }
+  .upgrade-block h4{ font-family:var(--body); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; color:var(--ink); margin:20px 0 4px; }
+  .upgrade-block .src-note{ font-family:var(--body); font-size:11.5px; color:var(--ink-faint); margin-bottom:16px; line-height:1.5; }
+  .ug-item{ border-radius:var(--radius-sm); background:var(--bg-soft); padding:13px 15px; margin-bottom:10px; }
+  .ug-tag{ display:inline-block; font-family:var(--body); font-size:10.5px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; padding:3px 10px; border-radius:var(--radius-pill); margin-bottom:8px; }
+  .ug-tag.up{ background:rgba(5,122,108,.12); color:var(--teal); }
+  .ug-tag.down{ background:rgba(184,40,26,.12); color:var(--r-bad); }
+  .ug-tag.change{ background:rgba(29,29,31,.08); color:var(--ink-dim); }
+  .ug-item p{ font-size:12.5px; color:var(--ink-dim); line-height:1.6; }
+  .ug-item p b{ color:var(--ink); }
+
 
   /* ---------- veredicto ---------- */
   .veredicto{ padding:90px 0; }
@@ -519,6 +531,26 @@
             </li>
           </ul>
         </div>
+        <div class="upgrade-block">
+          <h4>Qué cambió vs. hace ~1 año</h4>
+          <p class="src-note">Comparado contra un diagrama de flujo propio, levantado hace aproximadamente 12 meses (fuente no pública) — solo se listan cambios verificables en ambas fuentes.</p>
+          <div class="ug-item">
+            <span class="ug-tag up">↑ Mejora</span>
+            <p><b>Antes</b> el bloqueo pedía el número completo de la tarjeta ("Ingresa el N° de tarjeta"). <b>Ahora</b> el flujo de bloqueo solo pide tu DNI + confirmación — ya no necesitas tener la tarjeta física en la mano para bloquearla.</p>
+          </div>
+          <div class="ug-item">
+            <span class="ug-tag up">↑ Mejora</span>
+            <p>Clara ya existía hace un año como una derivación puntual dentro del IVR ("dime cómo te puedo ayudar"). Según fuentes públicas recientes (pestaña Mercado), evolucionó a IA generativa y hoy resuelve ~1 de cada 4 llamadas de forma autónoma — dejó de ser solo una derivación.</p>
+          </div>
+          <div class="ug-item">
+            <span class="ug-tag change">↔ Cambió</span>
+            <p><b>Antes</b> el menú se dividía por segmento de cliente (Ahorros vs. Tarjeta), con ramas para Yape, productos personales/empresariales y hasta callback. El Menú BEST que documentamos ahora es más compacto (4 opciones). No podemos confirmar si esas ramas desaparecieron o solo no las tocamos en estas llamadas.</p>
+          </div>
+          <div class="ug-item">
+            <span class="ug-tag down">↓ No identificado ahora</span>
+            <p>Hace un año existía una encuesta NPS explícita ("qué tan probable es que recomiendes...") tras la atención. No apareció en las llamadas actuales de BCP — a diferencia de BBVA, que sí mantiene una encuesta de cierre hoy.</p>
+          </div>
+        </div>
       </div>
       </div>
     </div>
@@ -650,6 +682,26 @@
               </ul>
             </li>
           </ul>
+        </div>
+        <div class="upgrade-block">
+          <h4>Qué cambió vs. hace ~1 año</h4>
+          <p class="src-note">Comparado contra un diagrama de flujo propio, levantado hace aproximadamente 12 meses (fuente no pública) — solo se listan cambios verificables en ambas fuentes.</p>
+          <div class="ug-item">
+            <span class="ug-tag up">↑ Mejora grande</span>
+            <p><b>Antes</b> te identificabas escribiendo tu DNI + 4 dígitos del año de nacimiento. <b>Ahora</b> te reconoce automáticamente por tu número de teléfono y solo confirmas con 1 dígito — la reducción de fricción más grande de los tres bancos en este período.</p>
+          </div>
+          <div class="ug-item">
+            <span class="ug-tag down">↓ Retroceso confirmado</span>
+            <p>El diseño original garantizaba: tras repetir un menú 3 veces se deriva a un asesor, y si la llamada se corta hay callback + SMS de seguimiento. En la llamada real que documentamos, tras 3 errores seguidos activando el token digital, el sistema cerró el autoservicio con una encuesta — <b>sin derivar a un asesor</b> como prometía el diseño original.</p>
+          </div>
+          <div class="ug-item">
+            <span class="ug-tag change">↔ Se perdió granularidad</span>
+            <p><b>Antes</b> el menú de bloqueo distinguía 3 opciones: bloquear tarjeta, bloquear app, y compras rechazadas. <b>Ahora</b> "bloquear tarjeta" ya no aparece como opción independiente — solo quedan "app/banca por internet" y "compras rechazadas o tarjetas bloqueadas" combinadas.</p>
+          </div>
+          <div class="ug-item">
+            <span class="ug-tag down">↓ No identificado ahora</span>
+            <p>La distinción explícita "robo" vs. "pérdida" como motivo de bloqueo, y el sistema de rellamada que te lleva directo a un asesor si ya digitaste tu DNI antes, no aparecen en las llamadas actuales — podrían seguir existiendo más adentro del árbol, sin confirmar.</p>
+          </div>
         </div>
       </div>
       </div>
@@ -787,6 +839,26 @@
               </ul>
             </li>
           </ul>
+        </div>
+        <div class="upgrade-block">
+          <h4>Qué cambió vs. hace ~1 año</h4>
+          <p class="src-note">Comparado contra un diagrama de flujo propio, levantado hace aproximadamente 12 meses (fuente no pública) — solo se listan cambios verificables en ambas fuentes.</p>
+          <div class="ug-item">
+            <span class="ug-tag up">↑ Mejora clara</span>
+            <p><b>Antes</b> pedía los 16 dígitos completos de la tarjeta ("Ingrese los 16 dígitos de la TD o TC"). <b>Ahora</b> solo pide los últimos 4 dígitos + confirmación por eco — una reducción de fricción real y significativa.</p>
+          </div>
+          <div class="ug-item">
+            <span class="ug-tag down">↓ Retroceso / no confirmado</span>
+            <p><b>Antes</b> existía una tecla directa — "0 · Para transferirlo a un asistente de servicio" — dentro del menú de reclamos. En las llamadas actuales no identificamos ninguna tecla numérica fija para pedir un asesor, algo que ya habíamos marcado como fricción en el veredicto.</p>
+          </div>
+          <div class="ug-item">
+            <span class="ug-tag change">↔ Cambió la numeración del bloqueo</span>
+            <p><b>Antes</b> el "1" bloqueaba específicamente la tarjeta de débito, con una opción "4" aparte para alertas/bloquear app. <b>Ahora</b> el "1" bloquea "tarjetas" de forma genérica (sin distinguir débito/crédito) y el "2" bloquea la app — se simplificó, pero se perdió la distinción débito/crédito que sí tiene BCP.</p>
+          </div>
+          <div class="ug-item">
+            <span class="ug-tag down">↓ No identificado ahora</span>
+            <p>Todo el submenú de reclamos (consultar estado de un reclamo, ingresar uno nuevo) no apareció en las llamadas actuales — puede seguir existiendo más adentro del árbol, simplemente no lo tocamos en estas grabaciones.</p>
+          </div>
         </div>
       </div>
       </div>
