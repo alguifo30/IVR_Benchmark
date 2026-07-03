@@ -278,6 +278,11 @@
   }
   .sim-tab.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
   .sim-tab:hover:not(.active){ border-color:var(--accent); color:var(--accent); }
+  .sim-tabs-row{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px 16px; margin-bottom:14px; }
+  .dataset-tabs{ margin-bottom:0; }
+  .dataset-tabs .sim-tab{ background:var(--bg-soft); }
+  .dataset-tabs .sim-tab.active{ background:var(--ink); border-color:var(--ink); }
+  .dataset-tabs .sim-tab[disabled]{ cursor:default; opacity:.8; }
 
   /* ---------- flow diagram ---------- */
   .flow-card{
@@ -422,6 +427,10 @@
           <b>Mensaje contradictorio</b>
           Pide "los últimos 4 dígitos" de la tarjeta, pero a continuación advierte que se necesita el número completo.
         </div>
+        <div class="finding">
+          <b>🆕 Nuevo</b>
+          También grabamos el flujo como no-cliente: al ingresar un DNI sin cuenta asociada, en vez del "Menú BEST" aparece un submenú distinto ("1: productos BEST", "2: Yape"). Cámbialo con las pestañas "Cliente / No cliente" junto al simulador.
+        </div>
         <button class="market-trigger" data-modal-open="bcp">Ver contexto de mercado de BCP →</button>
         <details class="tree-toggle">
           <summary>Ver árbol completo en texto</summary>
@@ -447,13 +456,27 @@
       </div>
 
       <div class="sim-col">
-      <div class="sim-tabs">
-        <button class="sim-tab active" data-view-btn="bcp" data-view="live">Simulador</button>
-        <button class="sim-tab" data-view-btn="bcp" data-view="diagram">Diagrama de flujo</button>
+      <div class="sim-tabs-row">
+        <div class="sim-tabs">
+          <button class="sim-tab active" data-view-btn="bcp" data-view="live">Simulador</button>
+          <button class="sim-tab" data-view-btn="bcp" data-view="diagram">Diagrama de flujo</button>
+        </div>
+        <div class="sim-tabs dataset-tabs">
+          <button class="sim-tab active" data-dataset-btn="bcp" data-dataset="cliente">🙋 Cliente</button>
+          <button class="sim-tab" data-dataset-btn="bcp" data-dataset="nocliente">🆕 No cliente</button>
+        </div>
       </div>
       <div class="sim" id="sim-bcp">
         <div class="sim-top">
           <div class="live"><span class="pulse"></span>Simulador de llamada</div>
+          <div class="time" data-time>0:00</div>
+        </div>
+        <div class="breadcrumb" data-breadcrumb></div>
+        <div class="sim-body" data-body></div>
+      </div>
+      <div class="sim" id="sim-bcp-nc" style="display:none;">
+        <div class="sim-top">
+          <div class="live"><span class="pulse"></span>Simulador de llamada · No cliente</div>
           <div class="time" data-time>0:00</div>
         </div>
         <div class="breadcrumb" data-breadcrumb></div>
@@ -552,6 +575,61 @@
           </div>
         </div>
       </div>
+      <div class="flow-card" id="flow-bcp-nc" style="display:none;">
+        <div class="flow-legend">
+          <span class="lg-item"><span class="lg-dot" style="background:var(--teal)"></span>Deriva / resuelve</span>
+          <span class="lg-item"><span class="lg-dot" style="background:var(--ink-faint)"></span>No identificado</span>
+        </div>
+        <div class="flow-wrap">
+          <ul class="flow-tree">
+            <li>
+              <div class="flow-node root">BCP · Menú raíz (igual que Cliente)</div>
+              <ul>
+                <li><div class="flow-node terminal-unknown">0 · Robo o pérdida ❓</div></li>
+                <li>
+                  <div class="flow-node">DNI · Consultas personales</div>
+                  <ul>
+                    <li>
+                      <div class="flow-node">Sin cuenta reconocida → submenú (no "Menú BEST")</div>
+                      <ul>
+                        <li>
+                          <div class="flow-node">1 · Adquirir productos BEST</div>
+                          <ul>
+                            <li>
+                              <div class="flow-node">Info: pasos en viabcp.com.pe → 1 repetir / 0 volver</div>
+                              <ul>
+                                <li><div class="flow-node terminal-ok">⏱ Sin respuesta → deriva a asesor ✓</div></li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                        <li>
+                          <div class="flow-node">2 · Yape</div>
+                          <ul>
+                            <li>
+                              <div class="flow-node">Info: WhatsApp 939-339-299, "vengo del BCP" → 1 repetir / 0 volver</div>
+                              <ul>
+                                <li><div class="flow-node terminal-unknown">⏱ 3x sin respuesta → cierre, sin asesor ❓</div></li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                        <li><div class="flow-node loop">0 · Volver al menú raíz ↩</div></li>
+                        <li><div class="flow-node loop"># · Repetir opciones ↩</div></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li><div class="flow-node terminal-unknown">* · Empresa (RUC) ❓</div></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div class="upgrade-block">
+          <h4>Sobre esta grabación</h4>
+          <p class="src-note">El saludo inicial y el menú raíz son idénticos a los del flujo Cliente. La diferencia aparece justo después de ingresar tu DNI: en vez del "Menú BEST" que recibe un cliente reconocido, este DNI (sin cuenta asociada) recibe un submenú distinto — "1: productos BEST" y "2: Yape" — pensado para quien todavía no es cliente. Es un camino de autoservicio informativo con un contraste interesante: la rama de productos BEST sí deriva a un asesor si no respondes, pero la de Yape simplemente cuelga tras 3 repeticiones.</p>
+        </div>
+      </div>
       </div>
     </div>
   </div>
@@ -568,7 +646,7 @@
 
     <div class="bank-grid">
       <div class="id-panel">
-        <p class="desc">BBVA identifica al cliente por su número de teléfono y confirma con un solo dígito — la autenticación inicial con menos fricción de los tres. A cambio, ofrece el árbol más profundo (hasta 5 niveles) en Tin Link, token digital y configuración de app.</p>
+        <p class="desc">BBVA identifica al cliente por su número de teléfono y confirma con un solo dígito — la autenticación inicial con menos fricción de los tres. A cambio, ofrece el árbol más profundo (hasta 5 niveles) en Plin, token digital y configuración de app.</p>
         <div class="chip-row">
           <span class="chip"><span class="dot"></span>Hasta 5 niveles</span>
           <span class="chip tag-good">Auth inicial: 1 dígito</span>
@@ -582,6 +660,10 @@
           <b>Fricción detectada</b>
           La activación de token digital falló 3 veces consecutivas en la prueba real ("el número que ha marcado es incorrecto") antes de cerrar el autoservicio.
         </div>
+        <div class="finding">
+          <b>🆕 Nuevo</b>
+          También grabamos el flujo como no-cliente: al decir "no soy el cliente", el sistema termina en un menú comercial genérico. Cámbialo con las pestañas "Cliente / No cliente".
+        </div>
         <button class="market-trigger" data-modal-open="bbva">Ver contexto de mercado de BBVA →</button>
         <details class="tree-toggle">
           <summary>Ver árbol completo en texto</summary>
@@ -593,8 +675,8 @@
 │   │   ├── 2: Compras rechazadas → No identificado
 │   │   └── 3: Volver
 │   ├── 2: Campañas / contratar productos → derivación directa a asesor
-│   └── 3: Tin Link / token / app BBVA
-│       ├── 1: Tin Link
+│   └── 3: Plin / token / app BBVA
+│       ├── 1: Plin
 │       │   ├── 1: Afiliación y uso → No identificado
 │       │   ├── 2: Estado transferencias → No identificado
 │       │   └── 3: Volver
@@ -611,13 +693,27 @@
       </div>
 
       <div class="sim-col">
-      <div class="sim-tabs">
-        <button class="sim-tab active" data-view-btn="bbva" data-view="live">Simulador</button>
-        <button class="sim-tab" data-view-btn="bbva" data-view="diagram">Diagrama de flujo</button>
+      <div class="sim-tabs-row">
+        <div class="sim-tabs">
+          <button class="sim-tab active" data-view-btn="bbva" data-view="live">Simulador</button>
+          <button class="sim-tab" data-view-btn="bbva" data-view="diagram">Diagrama de flujo</button>
+        </div>
+        <div class="sim-tabs dataset-tabs">
+          <button class="sim-tab active" data-dataset-btn="bbva" data-dataset="cliente">🙋 Cliente</button>
+          <button class="sim-tab" data-dataset-btn="bbva" data-dataset="nocliente">🆕 No cliente</button>
+        </div>
       </div>
       <div class="sim" id="sim-bbva">
         <div class="sim-top">
           <div class="live"><span class="pulse"></span>Simulador de llamada</div>
+          <div class="time" data-time>0:00</div>
+        </div>
+        <div class="breadcrumb" data-breadcrumb></div>
+        <div class="sim-body" data-body></div>
+      </div>
+      <div class="sim" id="sim-bbva-nc" style="display:none;">
+        <div class="sim-top">
+          <div class="live"><span class="pulse"></span>Simulador de llamada · No cliente</div>
           <div class="time" data-time>0:00</div>
         </div>
         <div class="breadcrumb" data-breadcrumb></div>
@@ -650,10 +746,10 @@
                         </li>
                         <li><div class="flow-node terminal-ok">2 · Campañas/productos ✓ asesor</div></li>
                         <li>
-                          <div class="flow-node">3 · Tin Link/token/app</div>
+                          <div class="flow-node">3 · Plin/token/app</div>
                           <ul>
                             <li>
-                              <div class="flow-node">1 · Tin Link</div>
+                              <div class="flow-node">1 · Plin</div>
                               <ul>
                                 <li><div class="flow-node terminal-unknown">1 · Afiliación y uso ❓</div></li>
                                 <li><div class="flow-node terminal-unknown">2 · Estado transf. ❓</div></li>
@@ -704,6 +800,51 @@
           </div>
         </div>
       </div>
+      <div class="flow-card" id="flow-bbva-nc" style="display:none;">
+        <div class="flow-legend">
+          <span class="lg-item"><span class="lg-dot" style="background:var(--teal)"></span>Deriva / resuelve</span>
+          <span class="lg-item"><span class="lg-dot" style="background:var(--ink-faint)"></span>No identificado</span>
+        </div>
+        <div class="flow-wrap">
+          <ul class="flow-tree">
+            <li>
+              <div class="flow-node root">BBVA · Identificación por teléfono</div>
+              <ul>
+                <li><div class="flow-node terminal-ok">1 · Sí es correcto → sigue como Cliente ✓</div></li>
+                <li>
+                  <div class="flow-node">2 · No soy el cliente</div>
+                  <ul>
+                    <li>
+                      <div class="flow-node">Ingresa DNI (o 1 · Carné extranjería)</div>
+                      <ul>
+                        <li>
+                          <div class="flow-node">"No pudimos identificar su documento" → reintenta</div>
+                          <ul>
+                            <li>
+                              <div class="flow-node">Menú genérico (no ligado a cuenta)</div>
+                              <ul>
+                                <li><div class="flow-node terminal-ok">0 · Bloquear tarjetas/app → ✓ asesor</div></li>
+                                <li><div class="flow-node terminal-ok">1 · Venta tarjeta/préstamo → ✓ asesor</div></li>
+                                <li><div class="flow-node terminal-ok">2 · Tarjetas de crédito → info salas VIP → ✓ asesor</div></li>
+                                <li><div class="flow-node terminal-ok">3 · Débito/cuentas/otros → ✓ asesor</div></li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div class="upgrade-block">
+          <h4>Sobre esta grabación</h4>
+          <p class="src-note">A diferencia del flujo de cliente (identificación por teléfono), como no-cliente el sistema intenta identificarte por DNI, falla, y termina derivándote a un <b>menú genérico no ligado a ninguna cuenta</b> — con opciones comerciales (venta de tarjeta, préstamos) en vez de autoservicio de cuenta.</p>
+          <p class="src-note" style="margin-top:10px;"><b>Hallazgo clave:</b> las 4 opciones de ese menú terminan derivando a un asesor humano — no hay ningún camino de autoservicio real para quien todavía no es cliente. En algunos casos (opción 2) hay un audio informativo antes del cierre; en otros (opción 1, y por el mismo patrón, 0 y 3) la derivación es directa. Es, en la práctica, un embudo de ventas más que de soporte.</p>
+        </div>
+      </div>
       </div>
     </div>
   </div>
@@ -734,6 +875,10 @@
           <b>Discrepancia entre grabaciones</b>
           "Cheques Telebanking" se anuncia como "opción 0" en una llamada y "opción 1" en la otra. No se pudo confirmar cuál es correcta.
         </div>
+        <div class="finding">
+          <b>Por qué solo hay "No cliente"</b>
+          A diferencia de BCP (DNI) y BBVA (reconocimiento por teléfono), en ninguna de las dos llamadas de Scotiabank el IVR confirma una identidad ya existente — siempre pide documento desde cero. No contamos con una grabación donde se reconozca a alguien como cliente ya identificado.
+        </div>
         <button class="market-trigger" data-modal-open="scotia">Ver contexto de mercado de Scotiabank →</button>
         <details class="tree-toggle">
           <summary>Ver árbol completo en texto</summary>
@@ -756,9 +901,14 @@
       </div>
 
       <div class="sim-col">
-      <div class="sim-tabs">
-        <button class="sim-tab active" data-view-btn="scotia" data-view="live">Simulador</button>
-        <button class="sim-tab" data-view-btn="scotia" data-view="diagram">Diagrama de flujo</button>
+      <div class="sim-tabs-row">
+        <div class="sim-tabs">
+          <button class="sim-tab active" data-view-btn="scotia" data-view="live">Simulador</button>
+          <button class="sim-tab" data-view-btn="scotia" data-view="diagram">Diagrama de flujo</button>
+        </div>
+        <div class="sim-tabs dataset-tabs">
+          <button class="sim-tab active" disabled title="No se grabó un flujo de cliente identificado para Scotiabank">🆕 No cliente</button>
+        </div>
       </div>
       <div class="sim" id="sim-scotia">
         <div class="sim-top">
@@ -1060,6 +1210,57 @@
     }
   };
 
+  // ---------- DATA: BCP (no cliente) ----------
+  const BCP_NC = {
+    accent:'bcp',
+    start:'root',
+    nodes:{
+      root:{
+        time:'0:00', authType:'none',
+        prompt:'Bienvenido al Banco de Crédito BCP.',
+        note:'La parte inicial es idéntica a la de un cliente: mismo saludo, mismas 3 opciones. La divergencia ocurre después de ingresar tu DNI.',
+        options:[
+          {k:'0', label:'Perdiste o te robaron tu celular o tarjeta', next:'bloqueo_na'},
+          {k:'DNI', label:'Consultas personales — ingresa tu DNI', next:'nc_menu'},
+          {k:'*', label:'Consultas de empresa — RUC u otro doc.', next:'empresa_na'},
+        ]
+      },
+      bloqueo_na:{ terminal:true, kind:'unknown', time:'0:12', friction:'—', text:'No identificado / pendiente de audio para esta rama en la grabación de no-cliente.' },
+      empresa_na:{ terminal:true, kind:'unknown', time:'0:12', friction:'—', text:'No identificado / pendiente de audio para esta rama en la grabación de no-cliente.' },
+      nc_menu:{
+        time:'0:15', authType:'new', authInfo:'DNI ya ingresado — sin cuenta de cliente reconocida',
+        prompt:'"Marca 1 para adquirir productos BEST. Marca 2 para todo tipo de consultas y transacciones de Yape. Marca 0 para regresar al menú anterior. Marca numeral (#) para repetir opciones."',
+        note:'Este submenú aparece en vez del "Menú BEST" que reciben los clientes reconocidos — consistente con un DNI que no está asociado a una cuenta ya existente en BCP.',
+        options:[
+          {k:'1', label:'Adquirir productos BEST', next:'productos_info'},
+          {k:'2', label:'Yape — consultas y transacciones', next:'yape_info'},
+          {k:'0', label:'Regresar al menú anterior', next:'root'},
+          {k:'#', label:'Repetir opciones', next:'nc_menu'},
+        ]
+      },
+      productos_info:{
+        time:'0:25', authType:'none',
+        prompt:'"Hola. Te contamos cómo adquirir nuestros productos. Paso 1: ingresa a www.viabcp.com.pe. Paso 2: en el menú principal, selecciona el producto (préstamos, tarjetas, cuentas, seguros, inversiones, servicios y beneficios). Paso 3: completa la información requerida. Listo, sigue rápido y fácil."',
+        options:[
+          {k:'1', label:'Repetir información', next:'productos_info'},
+          {k:'0', label:'Regresar al menú anterior', next:'nc_menu'},
+          {k:'⏱', label:'No responder — deriva a asesor', next:'productos_asesor', ghost:true},
+        ]
+      },
+      productos_asesor:{ terminal:true, kind:'ok', time:'0:50', friction:'Bajo', text:'Tras la información de productos BEST, la llamada deriva a un asesor humano.' },
+      yape_info:{
+        time:'0:35', authType:'none',
+        prompt:'"Recuerda que el único canal oficial de Yape es el WhatsApp 939-339-299. Solo comienza la conversación escribiendo: vengo del BCP, para recibir una atención más rápida." También disponible en www.yape.com.pe.',
+        options:[
+          {k:'1', label:'Repetir información', next:'yape_info'},
+          {k:'0', label:'Regresar al menú anterior', next:'nc_menu'},
+          {k:'⏱', label:'No responder — como en la llamada real', next:'nc_end', ghost:true},
+        ]
+      },
+      nc_end:{ terminal:true, kind:'unknown', time:'1:15', friction:'Medio', text:'Tras repetir el mensaje de Yape 3 veces sin recibir respuesta, la llamada cierra con "Gracias por llamar al Banco de Crédito BCP" — sin derivar a un asesor.', note:'Contraste con la opción 1: la de productos BEST sí deriva a un asesor si no respondes; la de Yape simplemente cuelga.' },
+    }
+  };
+
   // ---------- DATA: BBVA ----------
   const BBVA = {
     accent:'bbva',
@@ -1080,7 +1281,7 @@
         options:[
           {k:'1', label:'Bloquear tarjetas o app BBVA / compras rechazadas', next:'bloqueo_menu'},
           {k:'2', label:'Consultar campañas o contratar productos', next:'campanas'},
-          {k:'3', label:'Tin Link, token digital o consultas del app BBVA', next:'tlink_menu'},
+          {k:'3', label:'Plin, token digital o consultas del app BBVA', next:'tlink_menu'},
         ]
       },
       bloqueo_menu:{
@@ -1097,9 +1298,9 @@
       campanas:{ terminal:true, kind:'ok', time:'1:40', friction:'Bajo', text:'Aviso: "esta conversación puede ser grabada." → "En breve será atendido por un asesor." Derivación directa a un asesor humano, sin submenú adicional.' },
       tlink_menu:{
         time:'2:32', authType:'session', authInfo:'Sesión ya identificada',
-        prompt:'Consultas de Tin Link, activación de token digital o consultas del app BBVA.',
+        prompt:'Consultas de Plin, activación de token digital o consultas del app BBVA.',
         options:[
-          {k:'1', label:'Consultas de Tin Link', next:'tlink_sub'},
+          {k:'1', label:'Consultas de Plin', next:'tlink_sub'},
           {k:'2', label:'Activar token digital', next:'token_sub'},
           {k:'3', label:'Afiliación o configuración de la app BBVA', next:'app_sub'},
           {k:'4', label:'Conversar con un asesor (problemas con la app)', next:'asesor2'},
@@ -1109,9 +1310,9 @@
       asesor2:{ terminal:true, kind:'ok', time:'3:00', friction:'Bajo', text:'Derivación a un asesor por inconvenientes con la app BBVA. No se exploró el flujo posterior.' },
       tlink_sub:{
         time:'2:45', authType:'session', authInfo:'Sesión ya identificada',
-        prompt:'Tin Link.',
+        prompt:'Plin.',
         options:[
-          {k:'1', label:'Paso a paso de afiliación y uso de Tin Link', next:'tlink1_na'},
+          {k:'1', label:'Paso a paso de afiliación y uso de Plin', next:'tlink1_na'},
           {k:'2', label:'Estado de transferencias / reportar inconvenientes', next:'tlink2_na'},
           {k:'3', label:'Volver al menú anterior', next:'tlink_menu'},
         ]
@@ -1141,6 +1342,54 @@
       app1_na:{ terminal:true, kind:'unknown', time:'6:40', friction:'—', text:'No identificado / pendiente de audio.' },
       app2_na:{ terminal:true, kind:'unknown', time:'6:40', friction:'—', text:'No identificado / pendiente de audio.' },
       app3_result:{ terminal:true, kind:'ok', time:'7:10', friction:'Medio', text:'"Parece que su tarjeta se encuentra vencida. Por favor, acérquese a nuestras oficinas con su DNI para recoger su nueva tarjeta."', note:'Después ofrece: 1 = repetir la información, 2 = regresar al menú principal.' },
+    }
+  };
+
+  // ---------- DATA: BBVA (no cliente) ----------
+  const BBVA_NC = {
+    accent:'bbva',
+    start:'root',
+    nodes:{
+      root:{
+        time:'0:00', authType:'new', authInfo:'Confirmar identidad detectada por tu número de teléfono (1 = sí, 2 = no)',
+        prompt:'"¿Es correcto? Marca 1 para confirmar. De lo contrario, marca 2."',
+        options:[
+          {k:'1', label:'Sí es correcto → sigue como Cliente', next:'redirect_cliente'},
+          {k:'2', label:'No soy el cliente', next:'dni_request'},
+        ]
+      },
+      redirect_cliente:{ terminal:true, kind:'ok', time:'0:05', friction:'—', text:'A partir de aquí el flujo es el mismo que el de un cliente identificado — revisa la pestaña "Cliente" para ver ese camino completo.' },
+      dni_request:{
+        time:'0:15', authType:'new', authInfo:'DNI, o marca 1 para carné de extranjería',
+        prompt:'"Ingrese su número de DNI. Si tiene carnet de extranjería, marque 1."',
+        options:[
+          {k:'→', label:'DNI ingresado (no coincide con ningún cliente)', next:'dni_error'},
+          {k:'1', label:'Carné de extranjería', next:'dni_error'},
+        ]
+      },
+      dni_error:{
+        time:'0:30', authType:'new', authInfo:'Reintentar DNI o carné de extranjería',
+        prompt:'"Lo sentimos, no hemos podido identificar su documento. Por favor, intente nuevamente."',
+        note:'Como no eres cliente, el documento nunca "coincide" — la grabación muestra al sistema reintentar antes de rendirse y ofrecer un menú genérico.',
+        options:[
+          {k:'→', label:'Reintentar (sigue sin coincidir)', next:'generic_menu'},
+        ]
+      },
+      generic_menu:{
+        time:'0:50', authType:'none',
+        prompt:'"Lo estamos derivando al menú de opciones."',
+        note:'A diferencia del menú de cliente (atado a tu cuenta), este menú genérico no está ligado a ninguna cuenta — es el que recibe alguien que llama sin ser cliente todavía. Las 4 opciones terminan derivando a un asesor humano: no hay autoservicio real para quien no es cliente todavía.',
+        options:[
+          {k:'0', label:'Bloquear tarjetas/app BBVA o desbloquear tarjetas', next:'bloqueo_asesor'},
+          {k:'1', label:'Venta de tarjeta nueva / compra de deuda / préstamo', next:'venta_asesor'},
+          {k:'2', label:'Tarjetas de crédito', next:'beneficios_info'},
+          {k:'3', label:'Tarjetas de débito, cuentas, préstamos y otros', next:'otros_asesor'},
+        ]
+      },
+      bloqueo_asesor:{ terminal:true, kind:'ok', time:'1:00', friction:'Bajo', text:'Aviso: "esta conversación puede ser grabada." → "En breve será atendido por un asesor." Igual que el resto de opciones de este menú, termina derivando a un asesor humano.', note:'El aviso + derivación quedó confirmado textualmente para las opciones 1 y 2; para 0 se infiere el mismo cierre por la estructura repetida de la llamada.' },
+      venta_asesor:{ terminal:true, kind:'ok', time:'1:15', friction:'Bajo', text:'Aviso: "esta conversación puede ser grabada." → "En breve será atendido por un asesor." Derivación directa a un asesor comercial para venta de tarjeta nueva, compra de deuda o préstamo.' },
+      beneficios_info:{ terminal:true, kind:'ok', time:'2:00', friction:'Bajo', text:'Primero un audio informativo: detalla el beneficio de acceso a +1,300 salas VIP con tarjetas de crédito BBVA (Priority Pass, LoungePool) y la única sala afiliada en Perú (Back Lab, aeropuerto Jorge Chávez).', note:'Después de la información, la llamada también deriva a un asesor ("en breve será atendido por un asesor") — a diferencia de la opción 1, aquí sí hay contenido informativo antes del cierre.' },
+      otros_asesor:{ terminal:true, kind:'ok', time:'1:00', friction:'Bajo', text:'Aviso: "esta conversación puede ser grabada." → "En breve será atendido por un asesor." Igual que el resto de opciones de este menú, termina derivando a un asesor humano.', note:'El aviso + derivación quedó confirmado textualmente para las opciones 1 y 2; para 3 se infiere el mismo cierre por la estructura repetida de la llamada.' },
     }
   };
 
@@ -1221,7 +1470,7 @@
     }
   };
 
-  const TREES = { bcp:BCP, bbva:BBVA, scotia:SCOTIA };
+  const TREES = { bcp:BCP, 'bcp-nc':BCP_NC, bbva:BBVA, 'bbva-nc':BBVA_NC, scotia:SCOTIA };
   const state = {};
 
   function iconFor(kind){
@@ -1334,16 +1583,44 @@
   marketModal.addEventListener('click', (e) => { if(e.target === marketModal) closeMarketModal(); });
   document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeMarketModal(); });
 
-  // ---------- sim / diagram tabs ----------
-  document.querySelectorAll('.sim-tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const bankKey = btn.dataset.viewBtn;
-      const view = btn.dataset.view;
-      document.querySelectorAll('.sim-tab[data-view-btn="'+bankKey+'"]').forEach(b => b.classList.toggle('active', b === btn));
+  // ---------- sim / diagram / cliente-no cliente tabs ----------
+  const bankUiState = { bcp:{view:'live',dataset:'cliente'}, bbva:{view:'live',dataset:'cliente'}, scotia:{view:'live'} };
+
+  function applyBankDisplay(bankKey){
+    const st = bankUiState[bankKey];
+    if(!st) return;
+    if(st.dataset === undefined){
       const simEl = document.getElementById('sim-'+bankKey);
       const flowEl = document.getElementById('flow-'+bankKey);
-      if(simEl) simEl.style.display = (view === 'live') ? '' : 'none';
-      if(flowEl) flowEl.style.display = (view === 'diagram') ? 'flex' : 'none';
+      if(simEl) simEl.style.display = (st.view === 'live') ? '' : 'none';
+      if(flowEl) flowEl.style.display = (st.view === 'diagram') ? 'flex' : 'none';
+      return;
+    }
+    ['cliente','nocliente'].forEach(ds => {
+      const sfx = ds === 'nocliente' ? '-nc' : '';
+      const simEl = document.getElementById('sim-'+bankKey+sfx);
+      const flowEl = document.getElementById('flow-'+bankKey+sfx);
+      const isActiveDataset = st.dataset === ds;
+      if(simEl) simEl.style.display = (isActiveDataset && st.view === 'live') ? '' : 'none';
+      if(flowEl) flowEl.style.display = (isActiveDataset && st.view === 'diagram') ? 'flex' : 'none';
+    });
+  }
+
+  document.querySelectorAll('.sim-tab[data-view-btn]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const bankKey = btn.dataset.viewBtn;
+      document.querySelectorAll('.sim-tab[data-view-btn="'+bankKey+'"]').forEach(b => b.classList.toggle('active', b === btn));
+      bankUiState[bankKey].view = btn.dataset.view;
+      applyBankDisplay(bankKey);
+    });
+  });
+
+  document.querySelectorAll('.sim-tab[data-dataset-btn]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const bankKey = btn.dataset.datasetBtn;
+      document.querySelectorAll('.sim-tab[data-dataset-btn="'+bankKey+'"]').forEach(b => b.classList.toggle('active', b === btn));
+      bankUiState[bankKey].dataset = btn.dataset.dataset;
+      applyBankDisplay(bankKey);
     });
   });
 
