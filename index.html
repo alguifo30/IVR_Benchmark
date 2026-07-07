@@ -284,6 +284,19 @@
   .dataset-tabs .sim-tab.active{ background:var(--ink); border-color:var(--ink); }
   .dataset-tabs .sim-tab[disabled]{ cursor:default; opacity:.8; }
 
+  .expand-btn{
+    background:none; border:1px solid var(--line); border-radius:var(--radius-pill); padding:9px 16px;
+    font-family:var(--body); font-size:13px; font-weight:600; color:var(--ink-dim); cursor:pointer;
+    transition:.15s; display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .expand-btn:hover, .expand-btn:focus-visible{ border-color:var(--accent); color:var(--accent); }
+
+  .modal-box-lg{ max-width:1120px; }
+  .flow-modal-body{ padding:20px 24px 28px; max-height:74vh; overflow-y:auto; }
+  .flow-modal-subtoggle{ display:flex; gap:8px; margin-bottom:16px; }
+  #flow-modal-mount{ min-height:300px; }
+  @media (max-width:680px){ .modal-box-lg{ max-width:100%; } }
+
   /* ---------- flow diagram ---------- */
   .flow-card{
     background:var(--bg-card); border-radius:var(--radius-lg); box-shadow:var(--shadow-md);
@@ -465,6 +478,7 @@
           <button class="sim-tab active" data-dataset-btn="bcp" data-dataset="cliente">🙋 Cliente</button>
           <button class="sim-tab" data-dataset-btn="bcp" data-dataset="nocliente">🆕 No cliente</button>
         </div>
+        <button class="expand-btn" data-open-flow-modal="bcp">⤢ Ver flujo completo</button>
       </div>
       <div class="sim" id="sim-bcp">
         <div class="sim-top">
@@ -702,6 +716,7 @@
           <button class="sim-tab active" data-dataset-btn="bbva" data-dataset="cliente">🙋 Cliente</button>
           <button class="sim-tab" data-dataset-btn="bbva" data-dataset="nocliente">🆕 No cliente</button>
         </div>
+        <button class="expand-btn" data-open-flow-modal="bbva">⤢ Ver flujo completo</button>
       </div>
       <div class="sim" id="sim-bbva">
         <div class="sim-top">
@@ -909,6 +924,7 @@
         <div class="sim-tabs dataset-tabs">
           <button class="sim-tab active" disabled title="No se grabó un flujo de cliente identificado para Scotiabank">🆕 No cliente</button>
         </div>
+        <button class="expand-btn" data-open-flow-modal="scotia">⤢ Ver flujo completo</button>
       </div>
       <div class="sim" id="sim-scotia">
         <div class="sim-top">
@@ -1081,6 +1097,27 @@
     <a href="#bcp">↑ Volver al inicio</a>
   </div>
 </footer>
+
+<div class="modal-overlay" id="flow-modal" role="dialog" aria-modal="true" aria-labelledby="flow-modal-title">
+  <div class="modal-box modal-box-lg">
+    <div class="modal-head">
+      <div>
+        <h3 id="flow-modal-title">Diagrama de flujo completo</h3>
+        <p>Cambia de banco con las pestañas — sin cerrar esta ventana</p>
+      </div>
+      <button class="modal-close" id="flow-modal-close-btn" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab" data-flow-tab="bcp">BCP</button>
+      <button class="modal-tab" data-flow-tab="bbva">BBVA</button>
+      <button class="modal-tab" data-flow-tab="scotia">Scotiabank</button>
+    </div>
+    <div class="flow-modal-body">
+      <div class="flow-modal-subtoggle" id="flow-modal-subtoggle"></div>
+      <div id="flow-modal-mount"></div>
+    </div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="market-modal" role="dialog" aria-modal="true" aria-labelledby="market-modal-title">
   <div class="modal-box">
@@ -1565,6 +1602,7 @@
   }
 
   function openMarketModal(bankKey){
+    if(typeof closeFlowModal === 'function') closeFlowModal();
     setMarketTab(bankKey || 'sistema');
     marketModal.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -1623,6 +1661,88 @@
       applyBankDisplay(bankKey);
     });
   });
+
+  // ---------- flow modal (ver flujo completo) ----------
+  const flowModal = document.getElementById('flow-modal');
+  const flowModalTabs = flowModal.querySelectorAll('.modal-tab');
+  const flowModalMount = document.getElementById('flow-modal-mount');
+  const flowModalSubtoggle = document.getElementById('flow-modal-subtoggle');
+  let flowModalCurrentBank = null;
+
+  function flowCardIdFor(bankKey){
+    const st = bankUiState[bankKey];
+    const sfx = (st && st.dataset === 'nocliente') ? '-nc' : '';
+    return 'flow-' + bankKey + sfx;
+  }
+
+  function returnCurrentFlowCard(){
+    if(!flowModalCurrentBank) return;
+    const card = flowModalMount.querySelector('.flow-card');
+    if(card && card._homePlaceholder){
+      card._homePlaceholder.parentNode.insertBefore(card, card._homePlaceholder);
+      card._homePlaceholder.remove();
+      delete card._homePlaceholder;
+    }
+    applyBankDisplay(flowModalCurrentBank);
+    flowModalCurrentBank = null;
+  }
+
+  function renderFlowModalSubtoggle(bankKey){
+    const st = bankUiState[bankKey];
+    if(!st || st.dataset === undefined){
+      flowModalSubtoggle.style.display = 'none';
+      flowModalSubtoggle.innerHTML = '';
+      return;
+    }
+    flowModalSubtoggle.style.display = 'flex';
+    flowModalSubtoggle.innerHTML =
+      '<button class="sim-tab' + (st.dataset==='cliente' ? ' active' : '') + '" data-modal-ds="cliente">🙋 Cliente</button>' +
+      '<button class="sim-tab' + (st.dataset==='nocliente' ? ' active' : '') + '" data-modal-ds="nocliente">🆕 No cliente</button>';
+    flowModalSubtoggle.querySelectorAll('[data-modal-ds]').forEach(btn=>{
+      btn.addEventListener('click', () => {
+        st.dataset = btn.dataset.modalDs;
+        showFlowInModal(bankKey);
+      });
+    });
+  }
+
+  function showFlowInModal(bankKey){
+    returnCurrentFlowCard();
+    const cardId = flowCardIdFor(bankKey);
+    const card = document.getElementById(cardId);
+    if(!card) return;
+    const placeholder = document.createElement('span');
+    placeholder.style.display = 'none';
+    card.parentNode.insertBefore(placeholder, card);
+    card._homePlaceholder = placeholder;
+    flowModalMount.innerHTML = '';
+    flowModalMount.appendChild(card);
+    card.style.display = 'flex';
+    flowModalCurrentBank = bankKey;
+    renderFlowModalSubtoggle(bankKey);
+  }
+
+  function openFlowModal(bankKey){
+    closeMarketModal();
+    flowModalTabs.forEach(t => t.classList.toggle('active', t.dataset.flowTab === bankKey));
+    showFlowInModal(bankKey);
+    flowModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeFlowModal(){
+    returnCurrentFlowCard();
+    flowModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('[data-open-flow-modal]').forEach(btn => {
+    btn.addEventListener('click', () => openFlowModal(btn.dataset.openFlowModal));
+  });
+  flowModalTabs.forEach(t => t.addEventListener('click', () => openFlowModal(t.dataset.flowTab)));
+  document.getElementById('flow-modal-close-btn').addEventListener('click', closeFlowModal);
+  flowModal.addEventListener('click', (e) => { if(e.target === flowModal) closeFlowModal(); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && flowModal.classList.contains('open')) closeFlowModal(); });
 
 })();
 </script>
